@@ -130,8 +130,26 @@ class CoRobot(object):
     def __init__(self,*args,**kwargs):
         self.goalstate=kwargs.get("goal",10.0)
         self.timeout=kwargs.get("timeout",1.0)
-        self.oracleSigmaBeh=kwargs.get("oraclesigbeh",1.0)
+        
+        
+        #the variance in the action bias for agent, and in the action prediction for client
         self.oracleSigma=kwargs.get("oraclesig",1.0)
+        #this is the key factor for a manipulative corobot: the variance in the action bias over behaviours 
+        #larger values of this number will allow for more distance behaviours (away from the "optimal" one 
+        #which is inbetween the two identities) to be selectd by a corobot. A corobot may want to do this
+        #in order to fool another corobot into misinterpreting his identity
+        self.oracleSigmaBeh=kwargs.get("oraclesigbeh",1.0)
+
+        #I think this should actually be the same thing as oracleSigmaBeh as this is \Sigma_b - shared
+        #and the same between the two agents, but not in the case of manipulative agents - a manipulative
+        #agent will have a larger oracleSigmaBeh (giving it more flexibility to choose actions, which in
+        #turn requires more cognitive processing - a larger plan tree in POMCP will be required and more
+        #actions will need to be sampled) but keep the same client_beh_noise
+        #so, the default should be that they are the same, but a manipulative agent can have an inflated
+        #oracleSigmaBeh, along with a larger number of sampled actions (numcact)
+        self.client_beh_noise=kwargs.get("clientbehnoise",0.1)
+
+
         self.obsres=kwargs.get("obsres",1.0)
         self.actres=kwargs.get("actres",1.0)
         self.numcact=kwargs.get("numcact",2)
@@ -150,8 +168,6 @@ class CoRobot(object):
         self.obs_noise=0.5
         self.id_noise=0.1
         
-        self.client_beh_noise=0.1
-
 
         self.id_obs_noise=1.0
         self.discount_factor=0.9
@@ -165,11 +181,18 @@ class CoRobot(object):
 
 
         #negative identities will strive towards negative goals
-        self.oracleMeanValue=0.678
+        #however, we should be able to set this to 0.0
+        #this is the absolute (unsigned) amount of distance to move/moved predicted by the oracle
+        self.oracleMeanValue=0.0  #was 0.678 this is totally arbitrary if it is not zero
+        #oracleMean is the signed amount
         self.oracleMean=self.oracleMeanValue
         if self.identity[0] < 0:
             self.oracleMean = -1.0*self.oracleMeanValue
         
+        
+
+        #the absolute amount that the client is predicted to move by each frame
+        self.clientMovePrediction = 0.678
 
         self.initialise()
         self.POMCP_initialise()
@@ -248,17 +271,28 @@ class CoRobot(object):
         #client action depends on the power differential
         if NP.random.random() > pa:
             #draw from client - client will do his own thing based on his identity valence
+            #this is not quite right - the client will not keep moving if he is at his goal
             if state.fc[0] > 0:
-                xaction = self.oracleMeanValue
+                xaction = self.clientMovePrediction
             else:
-                xaction = -1.0*self.oracleMeanValue
+                xaction = -1.0*self.clientMovePrediction
+                
+            #I think this should really be - the client will stay in roughly the same spot as he currently is
+            # if he is more powerful - so just set the prediction x action to 0
+            xaction = 0.0
         else:
             #draw from agent - client will do the thing based on agent identity
-            #could make it so the client just moves towards the agent as well here
             if self.identity[0] > 0:
-                xaction = self.oracleMeanValue
+                xaction = self.clientMovePrediction
             else:
-                xaction = -1.0*self.oracleMeanValue
+                xaction = -1.0*self.clientMovePrediction
+            #could make it so the client just moves towards the agent as well here
+            if state.y > state.x:
+                xaction = self.clientMovePrediction
+            else:
+                xaction = -1.0*self.clientMovePrediction
+                
+            
         #this is our prediction noise for client behaviours
         xaction = xaction + NP.random.normal(0,self.oracleSigma,1)
 
@@ -274,6 +308,7 @@ class CoRobot(object):
         #use same noise terms for both agents for simplicity
         newy = state.y + yaction  + NP.random.normal(0,self.dyn_noise,1)
         newx = state.x + xaction  + NP.random.normal(0,self.dyn_noise,1)
+        #the obervations add even more noise
         newyobs = newy + NP.random.normal(0,self.obs_noise,1)
         newxobs = newx + NP.random.normal(0,self.obs_noise,1)
 
@@ -395,12 +430,16 @@ class CoRobot(object):
         else:
             omean = -1*self.oracleMeanValue
 
-        #the base action for movement is biased towards the client identity
+        #the base action for agent movement is biased towards the agent or client identity
         yact = NP.random.normal(omean,self.oracleSigma,1)
 
-        if state.turn==0:
+        if state.get_turn()=="agent":
             #the behaviour is half-way from client to agent id, only on agent turn
-            a = NP.append(yact,NP.random.normal(self.predictBehaviour(state),self.oracleSigmaBeh))
+            #if its the first one, we select the optimal, otherwise randomly - would be nice as an MCMC random walk
+            if samplenum==0:
+                a = NP.append(yact,self.predictBehaviour(state))
+            else:
+                a = NP.append(yact,NP.random.normal(self.predictBehaviour(state),self.oracleSigmaBeh))
         else:
             a = NP.append(yact,NP.array([0.0,0.0,0.0]))
 
@@ -514,15 +553,22 @@ trueIdObsNoise = 0.1
 trueGoal = 10.0
 trueRewSigma = 2.5
 
-obsres = 5.0
+obsres = 2.0
 actres = 1.0
 numcact = 25
+agent_numcact = 25   #possibly increase for a manipulative agent
 
-pomcptimeout=10.0
+pomcptimeout=20.0 
+agent_pomcptimeout=100.0  #increase for manipulative agent
 
 osig=1.0
-osigbeh=1.0
 
+#increase this for a manipulative agent
+osigbeh=0.5
+#default is that we have the same osigbeh, but a manipulative agent will have a higher value - also should correpondingly increase the pomcp numcact and the pomcp timeout (see above)
+agent_osigbeh=1.0  
+
+cbehnoise=0.5  #same as osigbeh by default - this used to be 0.1 but now I think it should be the same as osigbeh
 randomids = False
 #if negative, run forever
 numiterations=-1  
@@ -565,8 +611,8 @@ print "random ids?: ",randomids
 #and the only known identity is the agent's own identity
 initClientId_forAgent = defaultId
 initAgentId_forClient = defaultId
-trueClientId = [-2.0,-2.0,-2.0]
-trueAgentId = [2.0,2.0,2.0]
+trueClientId = [2.0,2.0,2.0]
+trueAgentId = [-2.0,-1.0,-1.0]
 
 
 if randomids:
@@ -594,12 +640,14 @@ iteration=0
 #true client id is passed to each agent, but only used by the oracle when poracle is true for tests/comparisons
 testAgent = CoRobot(goal=trueGoal,x=trueX,identity=trueAgentId,clientid=initClientId_forAgent,
                     cid_init=agent_clientId_noise_init,aid_init=agent_agentId_noise_init,sid_noise=agent_selfId_noise,
-                    turn=trueAgentTurn,timeout=pomcptimeout,obsres=obsres,actres=actres,numcact=numcact,oraclesig=osig,oraclesigbeh=osigbeh)
+                    turn=trueAgentTurn,timeout=agent_pomcptimeout,obsres=obsres,actres=actres,numcact=agent_numcact,oraclesig=osig,
+                    oraclesigbeh=agent_osigbeh,clientbehnoise=cbehnoise)
 
 
 testClient = CoRobot(goal=trueGoal,x=trueX,identity=trueClientId,clientid=initAgentId_forClient,
                      cid_init=client_clientId_noise_init,aid_init=client_agentId_noise_init,sid_noise=client_selfId_noise,
-                     turn=trueClientTurn,timeout=pomcptimeout,obsres=obsres,actres=actres,numcact=numcact,oraclesig=osig,oraclesigbeh=osigbeh)
+                     turn=trueClientTurn,timeout=pomcptimeout,obsres=obsres,actres=actres,numcact=numcact,oraclesig=osig,
+                     oraclesigbeh=osigbeh,clientbehnoise=cbehnoise)
 
 beliefStateAgent = testAgent.initialise()
 beliefStateClient = testClient.initialise()

@@ -88,6 +88,12 @@ SIMULATIONS:
 - e.g.:
    python bayesactsim.py -n <number of samples (default 1000)> -c <client knowledge (0,1,2) (default 2)> -a <agent knowledge (0,1,2) (Default 0)> -u (if specified - do uniform draws) -d <max horizon - default 50>
 
+To make plots of the samples during a simulation, do the following
+- edit bayesactsim.py and change verbose=True
+- run bayesactsim.py as above using whatever parameters you want, and redirect the output to output/bactsim<WHATEVER>.txt
+- run extract-samples-data WHATEVER <NUMSAMPLES> <OUTDIR>
+- most of the output goes in the directory from which you run this though - needs to be fixed up and streamlined
+- this calls plotsamples.m which uses octave (or could be changed to matlab)
 
 
 --------------------------
