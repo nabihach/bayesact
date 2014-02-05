@@ -97,7 +97,7 @@ class DiscreteTutoringAgent(Agent):
             xppx=NP.asarray(self.ppx[state.x[2]])
             #current and all previous ones as wellget increased by deflection
             for y in range(state.x[2]+1):
-                xppx[y] = xppx[y]*(D/4.0)
+                xppx[y] = xppx[y]*(D/4.0)  #this is likely incorrect - why did I do this with a *?
             #y=x[1]
             xppx = xppx/float(xppx.sum())
             #sample from this to get the new x value
