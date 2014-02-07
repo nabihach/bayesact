@@ -57,7 +57,7 @@ get_full_id_rate=10
 mimic_interact=False
 
 #use pomcp for planning (default use heuristic/greedy method)
-use_pomcp=True
+use_pomcp=False
 
 #parameters for pomcp
 #number of continuous actions we wish to sample - 
