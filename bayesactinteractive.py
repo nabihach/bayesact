@@ -13,6 +13,7 @@ see README for details
 ----------------------------------------------------------------------------------------------"""
 
 from bayesact import *
+import getopt
 
 #NP.set_printoptions(precision=5)
 #NP.set_printoptions(suppress=True)
@@ -119,6 +120,8 @@ if mimic_interact:
     obs_noise=0.01
     num_action_samples=10000
 
+gamma_value=obs_noise
+
 
 #do we print out all the samples each time
 learn_verbose=False
@@ -129,6 +132,36 @@ print "random seeed is : ",rseed
 #rseed=271887164
 
 NP.random.seed(rseed)
+
+
+helpstring="Bayesact interactive simulator (1 agents, 1 human) usage:\n bayesactinteractive.py\n\t -n <number of samples (default 500)>\n\t -a <agent knowledge (0,1,2) (Default 2)>\n\t -r <roughening noise: default n^(-1/3) - to use no roughening ('full' method), specify 0>\n\t -g <gamma_value (default 0.1)>\n\t -i <agent id label: default randomly chosen>\n\t  -j <client id label: default randomly chosen>\n\t -k <agent gender (default: male) - only works if agent_id is specified with -i>\n\t -l (client gender (default: male) only works if client_id is specified with -j>"
+
+try:
+    opts, args = getopt.getopt(sys.argv[1:],"hun:t:x:a:c:d:r:e:g:i:j:k:l:",["help","n=","t=","x=","c=","a=","u=","d=","r=","e=","g=","i=","j=","k=","l="])
+except getopt.GetoptError:
+    print helpstring
+    sys.exit(2)
+for opt, arg in opts:
+    if opt == '-h':
+        print helpstring
+        sys.exit()
+    elif opt in ("-n", "--numsamples"):
+        num_samples = int(arg)
+    elif opt in ("-a", "--agentknowledge"):
+        agent_knowledge = int(arg)
+    elif opt in ("-r", "--roughen"):
+        roughening_noise=float(arg)
+    elif opt in ("-g", "--gamma"):
+        gamma_value=float(arg)
+    elif opt in ("-i", "--agentid"):
+        agent_id=arg
+    elif opt in ("-j", "--clientid"):
+        client_id=arg
+    elif opt in ("-k", "--agentgender"):
+        agent_gender=arg
+    elif opt in ("-l", "--clientgender"):
+        client_gender=arg
+
 
 #-----------------------------------------------------------------------------------------------------------------------------
 #code start - here there be dragons - only hackers should proceed, with caution
@@ -220,7 +253,7 @@ learn_initx=initial_turn
 
 #get the agent - can use some other subclass here if wanted 
 learn_agent=Agent(N=num_samples,alpha_value=1.0,
-                  gamma_value=obs_noise,beta_value_agent=bvagent,beta_value_client=bvclient,
+                  gamma_value=gamma_value,beta_value_agent=bvagent,beta_value_client=bvclient,
                   beta_value_client_init=learn_beta_client_init,beta_value_agent_init=learn_beta_agent_init,
                   client_gender=client_gender,agent_gender=agent_gender,
                   agent_rough=roughening_noise,client_rough=roughening_noise,use_pomcp=use_pomcp,
@@ -281,7 +314,8 @@ while not done:
         print "agent advises the following action :",client_aab,"\n  closest labels are: ", [re.sub(r"_"," ",i.strip()) for i in aact]
 
         #now, this is where the client actually decides what to do, possibly looking at the suggested labels from the agent
-        learn_observ=ask_client(fbehaviours_client,aact[0],client_aab)
+        #we use fbehaviours_agent here (for agent gender) as it is the agent who is perceiving this
+        learn_observ=ask_client(fbehaviours_agent,aact[0],client_aab)
         #should be to get a default (null)  action from the agent
         #learn_aab=[0.0,0.0,0.0]
         print "client action: ",learn_observ
