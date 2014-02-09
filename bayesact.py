@@ -1257,7 +1257,7 @@ class Agent(object):
         if True or not self.use_pomcp:
             #if client turn, returns the default (null) actions
             (aab,paab)= self.get_default_action(state)
-            print "myopic version: ",aab, " paab: ",paab
+            #print "myopic version: ",aab, " paab: ",paab
 
         
         #other options: 

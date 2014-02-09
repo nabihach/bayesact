@@ -179,8 +179,8 @@ def is_array_of_floats(possarray):
         
     
 #a function to ask the client for an action to take and map it to an EPA value
-def ask_client(fbeh,sugg_act='',epaact=[]):
-    sst="your action ('?' shows options): "
+def ask_client(fbeh,sugg_act='',epaact=[],who="agent"):
+    sst="action to take for "+who+" ('?' shows options): "
 
     sstnc="You can now either :\n"
     sstnc+="- pick an action (behaviour) and type in its label\n"
@@ -296,14 +296,16 @@ while not done:
     #get the next action for the agent - may be a null action if it is the client turn
     (learn_aab,learn_paab)=learn_agent.get_next_action(learn_avgs,exploreTree=True)
     aact=findNearestBehaviour(learn_aab,fbehaviours_agent)
-    print "suggested action for the agent is :",learn_aab,"\n  closest label is: ",aact
+    if learn_turn=="agent":
+        print "suggested action for the agent is :",learn_aab,"\n  closest label is: ",aact
+
 
     if learn_turn=="agent":
         #we only want to ask the user for an action if it is his turn, 
         #although this could be relaxed to allow the agent to barge in 
         #this will be relevant if the turn is non-deterministic, in which case there
         #may be some samples for each turn value, and we may want an action to take??
-        learn_aab=ask_client(fbehaviours_agent,aact,learn_aab)
+        learn_aab=ask_client(fbehaviours_agent,aact,learn_aab,learn_turn)
         print "agent does action :",learn_aab,"\n"
         learn_observ=[]
     else:
@@ -315,7 +317,7 @@ while not done:
 
         #now, this is where the client actually decides what to do, possibly looking at the suggested labels from the agent
         #we use fbehaviours_agent here (for agent gender) as it is the agent who is perceiving this
-        learn_observ=ask_client(fbehaviours_agent,aact[0],client_aab)
+        learn_observ=ask_client(fbehaviours_agent,aact[0],client_aab,learn_turn)
         #should be to get a default (null)  action from the agent
         #learn_aab=[0.0,0.0,0.0]
         print "client action: ",learn_observ
