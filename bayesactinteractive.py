@@ -134,7 +134,7 @@ print "random seeed is : ",rseed
 NP.random.seed(rseed)
 
 
-helpstring="Bayesact interactive simulator (1 agents, 1 human) usage:\n bayesactinteractive.py\n\t -n <number of samples (default 500)>\n\t -a <agent knowledge (0,1,2) (Default 2)>\n\t -r <roughening noise: default n^(-1/3) - to use no roughening ('full' method), specify 0>\n\t -g <gamma_value (default 0.1)>\n\t -i <agent id label: default randomly chosen>\n\t  -j <client id label: default randomly chosen>\n\t -k <agent gender (default: male) - only works if agent_id is specified with -i>\n\t -l (client gender (default: male) only works if client_id is specified with -j>"
+helpstring="Bayesact interactive simulator (1 agents, 1 human) usage:\n bayesactinteractive.py\n\t -n <number of samples (default 500)>\n\t -a <agent knowledge (0,1,2) (Default 2)>\n\t -r <roughening noise: default n^(-1/3) - to use no roughening ('full' method), specify 0>\n\t -g <gamma_value (default 0.1)>\n\t -i <agent id label: default randomly chosen>\n\t -j <client id label: default randomly chosen>\n\t -k <agent gender (default: male) - only works if agent_id is specified with -i>\n\t -l (client gender (default: male) only works if client_id is specified with -j>"
 
 try:
     opts, args = getopt.getopt(sys.argv[1:],"hun:t:x:a:c:d:r:e:g:i:j:k:l:",["help","n=","t=","x=","c=","a=","u=","d=","r=","e=","g=","i=","j=","k=","l="])
