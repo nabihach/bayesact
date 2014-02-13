@@ -469,16 +469,6 @@ def getDefaultMeanF(fvars,tvars,H,C,tau,f,turn="agent",aab=[],observ=[]):
 
 
 
-#evaluates a sample of Fvar'=state.f
-def evalSampleFvar(tvars,tdyn,state,ivar,ldenom,turn,observ):
-    weight=0.0
-    if (not observ==[]) and turn=="client":
-        fb=getbvars(fvars,state.f)
-        dvo=NP.array(fb)-NP.array(observ)
-        weight += normpdf(dvo,0.0,ivar,ldenom)
-    else:
-        weight=0.0
-    return weight
 
 #compute the log-PDF of a normal with mean mean and 
 #constant multiplicative factor in the exponent ivar, 
@@ -1081,6 +1071,18 @@ class Agent(object):
         noiseVector=NP.concatenate((NP.ones((3,1))*self.agent_rough,NP.zeros((3,1)),NP.ones((3,1))*self.client_rough)).flatten(1)
         map(lambda x: x.roughen(noiseVector),samples)
 
+
+    #evaluates a sample of Fvar'=state.f
+    def evalSampleFvar(self,fvars,tdyn,state,ivar,ldenom,turn,observ):
+        weight=0.0
+        if (not observ==[]) and turn=="client":
+            fb=getbvars(fvars,state.f)
+            dvo=NP.array(fb)-NP.array(observ)
+            weight += normpdf(dvo,0.0,ivar,ldenom)
+        else:
+            weight=0.0
+        return weight
+
     #the main SMC update step. Given an affective action aab and a propositional action paab,
     #and an affective observation observ and an  observation xobserv, update the samples
     #by first drawing an unweighted set, propagating those forward, computing the weights
@@ -1111,7 +1113,7 @@ class Agent(object):
         for sample in new_samples:
             newsample = self.sampleNext(fvars,tvars,sample,sample.get_turn(),aab,observ,paab)
 
-            theweight = evalSampleFvar(tvars,self.tdyn,newsample,self.theivar,self.ldenom,sample.get_turn(),observ)
+            theweight = self.evalSampleFvar(fvars,self.tdyn,newsample,self.theivar,self.ldenom,sample.get_turn(),observ)
             newweight = newsample.weight+theweight
 
             thexweight = self.evalSampleXvar(newsample,xobserv)
