@@ -172,16 +172,16 @@ for opt, arg in opts:
 #-----------------------------------------------------------------------------------------------------------------------------
 #code start - here there be dragons - only hackers should proceed, with caution
 #-----------------------------------------------------------------------------------------------------------------------------
-def addWordToKnownWords(word,fbs):
+def addWordToKnownWords(word,fbs,weight):
     if not word in knownWords:
         wordCounts[word] = 0
         knownWords[word] = []
     wordCounts[word] += 1
-    knownWords[word].append(NP.array(fbs))
+    knownWords[word].append((NP.array(fbs),weight))
 
-def addChatToKnownWords(chat,fbs):
+def addChatToKnownWords(chat,fbs,weight):
     for word in chat.split():
-        addWordToKnownWords(word,fbs)
+        addWordToKnownWords(word,fbs,weight)
 
 def getWeight(fb,sentence,h):
     sum_weight=0
@@ -220,7 +220,8 @@ class LearningAgent(Agent):
             fb=getbvars(fvars,state.f)
             try:
                 #super inefficient because it checks if each word in the chat is known every time this is called (for every sample)
-                addChatToKnownWords(observ,fb)
+                #this should have been already done
+                #addChatToKnownWords(observ,fb)
                 #assume this will not get done if the above line throws the Attribute Exception, which
                 #means that observ is actually a list of floats  - this seems really awkward
                 weight += getWeight(fb,observ,self.h)
@@ -238,6 +239,18 @@ class LearningAgent(Agent):
         for state in self.samples:
             fb.append(getbvars(fvars,state.f))
         return fb
+
+    def drawFbSample(self,fvars):
+        new_sample=drawSamples(self.samples,1)
+        (tmpfv,wgt,tmpH,tmpC)=sampleFvar(fvars,tvars,self.iH,self.iC,self.isiga,self.isigf_unconstrained_b,state.tau,state.f,state.get_turn(),[],[])
+        fb = getbvars(fvars,tmpfv)
+        return fb
+
+
+    def addChat(self,fvars,observ):
+        fb=self.drawFbSample(fvars)
+        addChatToKnownWords(observ,fb,0.01)  #small weight here
+
 
 
 def is_array_of_floats(possarray):
@@ -335,8 +348,8 @@ def ask_client_chat(fbeh,sugg_act='',epaact=[],who="agent"):
                     observ = map(lambda x: float (x), [fbeh[cact]["e"],fbeh[cact]["p"],fbeh[cact]["a"]])
                 elif is_array_of_floats(behlabel):
                     observ = [float(x) for x in behlabel.split(',')]
-                #enter the chat into the dictionaries
-                addChatToKnownWords(cchat,observ)
+                #enter the chat into the dictionaries with a weight of 1  (the largest possible weight)
+                addChatToKnownWords(cchat,observ,1)
                 #return the observ value (EPA value)
                 return observ
             #else, return the chat
@@ -463,9 +476,12 @@ while not done:
         #agent gets to observe the turn each time
         learn_xobserv=[State.turnnames.index(invert_turn(learn_turn))]
 
+        #add the chat to the list of known words associated with the predicted fb
+        learn_agent.addChat(fvars,learn_observ)
+        
         #the main SMC update step 
         learn_avgs=learn_agent.propagate_forward(learn_aab,learn_observ,learn_xobserv,learn_paab,verb=learn_verbose)
-
+        
         #I think these should be based on fundamentals, not transients
         (aid,cid)=learn_agent.get_avg_ids(learn_avgs.f)
         print "agent thinks it is most likely a: ",aid
