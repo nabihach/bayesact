@@ -103,7 +103,7 @@ fifname="fidentities.dat"
 
 #get some key parameters from the command line
 #set much larger to mimic interact (>5000)
-num_samples=500
+num_samples=1000
 
 
 # use 0.0 for mimic interact simulations
@@ -192,16 +192,15 @@ def getWeight(fb,sentence,h):
 def getWeightWord(fb,word,h):
     #compute the kernel estimate of the density given the word
     weight=0.0
-    for fbi in knownWords[word]:
-        weight += math.exp(-1.0*raw_dist(fb,fbi)/h)
+    for (fbi,wgt) in knownWords[word]:
+        weight += wgt*math.exp(-1.0*raw_dist(fb,fbi)/h)
     return weight
 
 def printKnownWords():
     for word in knownWords:
         print "word is :",word
-        print fsampleMean(knownWords[word])
-        #print knownWords[word]
-        
+        #print fsampleMean(knownWords[word])
+        print knownWords[word]        
 
 #the learning agent class - must override evalSampleFvar
 class LearningAgent(Agent):
@@ -241,15 +240,20 @@ class LearningAgent(Agent):
         return fb
 
     def drawFbSample(self,fvars):
-        new_sample=drawSamples(self.samples,1)
+        newsample=drawSamples(self.samples,1)
+        state = newsample[0]
         (tmpfv,wgt,tmpH,tmpC)=sampleFvar(fvars,tvars,self.iH,self.iC,self.isiga,self.isigf_unconstrained_b,state.tau,state.f,state.get_turn(),[],[])
         fb = getbvars(fvars,tmpfv)
         return fb
 
 
     def addChat(self,fvars,observ):
-        fb=self.drawFbSample(fvars)
-        addChatToKnownWords(observ,fb,0.01)  #small weight here
+        try:
+            fb=self.drawFbSample(fvars)
+            addChatToKnownWords(observ,fb,0.01)  #small weight here
+        except AttributeError:  #lame
+            return
+        return
 
 
 
@@ -348,6 +352,9 @@ def ask_client_chat(fbeh,sugg_act='',epaact=[],who="agent"):
                     observ = map(lambda x: float (x), [fbeh[cact]["e"],fbeh[cact]["p"],fbeh[cact]["a"]])
                 elif is_array_of_floats(behlabel):
                     observ = [float(x) for x in behlabel.split(',')]
+                else:
+                    #hashtag was not found, so ignore and continue as usual
+                    return cchat
                 #enter the chat into the dictionaries with a weight of 1  (the largest possible weight)
                 addChatToKnownWords(cchat,observ,1)
                 #return the observ value (EPA value)
