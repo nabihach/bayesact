@@ -431,7 +431,6 @@ def main(argv):
     if (False == plot):
         bayesactsim(argv,None,verbose)
     else:
-        print verbose
         plotter = cBayesactSimGui()
         bayesactSimThread = threading.Thread(target=bayesactsim, args=(argv,plotter,verbose))
         plotter.setThread(bayesactSimThread)
