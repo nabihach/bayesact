@@ -19,8 +19,6 @@ import numpy as NP
 import itertools
 import time
 from pomcp import *
-sys.path.append("./gui/")
-from cEnum import eTurn
 
 #from hfun import h_fun as h_fun_c
 
@@ -87,7 +85,7 @@ for s in sentvals:
 #followed by the 9-D multiplication matrix M row
 # the tvars are ordered as:
 # Ae, Ap, Aa, Be, Bp, Ba, Oe, Op, Oa,
-#the result is e.g. tdyn-male which is an array of arrays, each of which
+#the result is e.g. tdyn-male which is an array of arrays, each of which 
 #contains a list of tvars terms followed by the matrix row
 #for males
 tdyn_male=[]
@@ -138,7 +136,7 @@ def init_id(knowledge,agent_id,client_id=[],mean_id=[],num_confusers=0):
         prop_init=NP.dot(NP.ones((num_confusers+1,1)),1.0/(num_confusers+1)).transpose()
         beta_client_init=0.5
         beta_agent_init=0.01
-    elif knowledge==3:
+    elif knowledge==3: 
         if mean_id==[]:
             tau_init=NP.concatenate((NP.zeros((3,1)),NP.zeros((3,1)),NP.zeros((3,1)))).transpose()
         else:
@@ -206,14 +204,14 @@ def printNearbyIdentities(fifname,gender,edist):
                     listofids.append((theid,theotherid,thedist))
     return listofids
 
-#gets the EPA value for identity ident with gender
+#gets the EPA value for identity ident with gender 
 def getIdentity(fifname,theid,gender):
     iddic=readSentiments(fifname,gender)
     if iddic.has_key(theid):
         return NP.asarray([float(iddic[theid]["e"]),float(iddic[theid]["p"]),float(iddic[theid]["a"])])
     else:
         return []
-
+    
 def invert_turn(turn):
     if turn=="agent":
         return "client"
@@ -221,7 +219,7 @@ def invert_turn(turn):
         return "agent"
     else:
         return turn
-
+        
 
 #true if mrow[0] has a variable that starts with v in it
 def has_variable(mrow,v):
@@ -235,7 +233,7 @@ def swapACVar(Tvar):
         return Tvar[0]+"a"+Tvar[2]
     else:
         return Tvar
-
+    
 def swapACVars(arrayTvars):
     return map(lambda x: swapACVar(x), arrayTvars)
 
@@ -295,22 +293,22 @@ def instHCfromTauNew(tvars,GG,MM,tau,turn):
 
     #returns the instance of H and C needed from tau
     return (tmpH,tmpC)
-
-
+    
+    
 #this function builds the instances of \mathscr{H} and \mathsrc{C} from tau for a particular turn
-#essentially, this constructs \mathscr{G} but without any "b" terms (no behaviours - replacing any elements of \mathscr{G}
-#that have only behaviours with 1), replicates it row-wise 9 times to give a 9x29 matrix, and mutliplies
-#this point-wise by the transpose of the transition matrix, M^T (another 9x29 matrix).
-#It then divides the resulting matrix into four blocks corresponding to the elements of the original \mathsrc{G}
-#that contain no, 'e', 'p' and 'a' behaviours (none,Tbe,Tbp,Tba).
+#essentially, this constructs \mathscr{G} but without any "b" terms (no behaviours - replacing any elements of \mathscr{G} 
+#that have only behaviours with 1), replicates it row-wise 9 times to give a 9x29 matrix, and mutliplies 
+#this point-wise by the transpose of the transition matrix, M^T (another 9x29 matrix).  
+#It then divides the resulting matrix into four blocks corresponding to the elements of the original \mathsrc{G} 
+#that contain no, 'e', 'p' and 'a' behaviours (none,Tbe,Tbp,Tba).  
 #It then sums each of these blocks to give a 9x4 matrix, the first column of which is \mathsrc{C} and
 #the last three columns of which are \mathsrc{H}
-#inputs are
+#inputs are 
 # - tau (the current transient sentiment vector)
 # - H the rows of the transition matrix M that correspond to values of \mathscr{G} with Tb<i> values i=e,p, or a
 #     H[turn]['Tbe'] gives those rows that correspond to values of \mathsrc{G} that contain 'Tbe'
 # - C the rows of the transition matrix M that correspond to values of \mathscr{G} with no Tb values at all
-#H[turn]['Tbi'] and C[turn] are both lists of tuples, each tuple giving: first, a list of strings like 'Tbi'
+#H[turn]['Tbi'] and C[turn] are both lists of tuples, each tuple giving: first, a list of strings like 'Tbi' 
 #giving the set of transients from \mathsrc{G} that should be multiplied together; second, the corresponding row from M
 def instHCfromTau(tvars,H,C,tau,turn):
     tmpH=h_fun(H[turn]["Tbe"],tvars,tau)
@@ -321,7 +319,7 @@ def instHCfromTau(tvars,H,C,tau,turn):
     return (tmpH,tmpC)
 
 
-#consumes a matrix h which is like tdyn -  has h[i][0] giving the elements of of T that are to be used
+#consumes a matrix h which is like tdyn -  has h[i][0] giving the elements of of T that are to be used 
 #(a list of strings of the form 'Tij' where i is a,b,c and j is e,p,a
 #and h[i][1] giving the coefficients of M for that element
 def h_fun(h,tvars,t):
@@ -343,18 +341,18 @@ def h_fun(h,tvars,t):
             mult=1
         #these are all different ways of doing the same thing
         #mult=NP.prod([t[v] for v in hh[0]])
-        #sum = NP.add(sum,NP.multiply(mult,hh[1])) # pointwise multiply so return the whole row h[1]  multiplied by all the t[v]'s
+        #sum = NP.add(sum,NP.multiply(mult,hh[1])) # pointwise multiply so return the whole row h[1]  multiplied by all the t[v]'s 
         #sum = [sum[i]+mult*hh[1][i] for i in range(9)]
-        #this, the least fancy method seems to work fastest!
+        #this, the least fancy method seems to work fastest! 
 	for i in range(9):
 	    sum[i] = sum[i] + mult*hh[1][i]
-    return sum
+    return sum  
 
 
 def sampleTvars(tvars,instH,instC,fp):
     term = NP.add(NP.array([NP.dot(fp[3:6],instH)]).transpose(),instC)
     return term.flatten(1)
-
+    
 
 
 #extracts the b variables from fvars
@@ -373,7 +371,7 @@ def getbvars(fvars,vars,flag=True):
 def sampleFvar(fvars,tvars,H,C,isiga,isigf,tau,f,turn="agent",aab=[],observ=[]):
 
 
-    #if a "reset" is done, then we always use "client" turn
+    #if a "reset" is done, then we always use "client" turn 
     reset=False
     if turn=="creset":
         turn="client"
@@ -381,11 +379,11 @@ def sampleFvar(fvars,tvars,H,C,isiga,isigf,tau,f,turn="agent",aab=[],observ=[]):
         thesigf=isigf["agent"]
     else:
         thesigf=isigf[turn]
-
+    
     #now we will insert aab into f here
     #this seems like a hack, but in fact it is only a small one
     #we are "using" the "b" slot in f to hold what the agent action is
-    #and when turn=="agent", the variance on b is tiny, so forces
+    #and when turn=="agent", the variance on b is tiny, so forces 
     #the samples to have a Fb-value which is the same as aab
     #here, we could also replace f[0:3] with aab if aab is 6-D :
     #f=NP.concatenate((aab,f[6:9]))
@@ -398,7 +396,7 @@ def sampleFvar(fvars,tvars,H,C,isiga,isigf,tau,f,turn="agent",aab=[],observ=[]):
     #special case - observation is used as f_b directly if there was a reset
     if reset and not observ==[]:
         f=NP.concatenate((f[0:3],observ,f[6:9]))
-
+        
 
 
     #get the instantiated versions of H and C - these have the actual values from tau
@@ -412,24 +410,24 @@ def sampleFvar(fvars,tvars,H,C,isiga,isigf,tau,f,turn="agent",aab=[],observ=[]):
 
     zmat= NP.zeros((3,9))
     K= NP.eye(9)-NP.vstack([zmat, tmpH, zmat]).transpose()
-
+    
     #including beta, full version using a draw from a multivariate_normal
     #this will be slower I guess, but I can't find a way to split these into two
     #one way might be to sample without the beta term, then weight using the difference
     # from the previous fundamental
     ka=NP.dot(K.transpose(),isiga)
-
+        
     #this is K^{-1} \Sig K^{-1}  or (K\Sig^{-1} K)^{-1}
     #this is actually (K\Sig^{-1} K)  - not sure what the previous comment line was supposd to mean - delete?
     mean_prediction = NP.dot(ka,K)
     sig_n=NP.linalg.inv(mean_prediction+thesigf)
-
-
+    
+        
 
     #mean value
     mu_n=NP.dot(sig_n,(NP.dot(ka,tmpC)+NP.dot(thesigf,NP.array([f]).transpose())))
 
-
+    
 
     f_s=NP.random.multivariate_normal(NP.asarray(mu_n).flatten(1),sig_n).transpose()
 
@@ -445,7 +443,7 @@ def getDefaultMeanF(fvars,tvars,H,C,tau,f,turn="agent",aab=[],observ=[]):
     #now we will insert aab into f here
     #this seems like a hack, but in fact it is only a small one
     #we are "using" the "b" slot in f to hold what the agent action is
-    #and when turn=="agent", the variance on b is tiny, so forces
+    #and when turn=="agent", the variance on b is tiny, so forces 
     #the samples to have a Fb-value which is the same as aab
     #here, we could also replace f[0:3] with aab if aab is 6-D :
     #f=NP.concatenate((aab,f[6:9]))
@@ -472,8 +470,8 @@ def getDefaultMeanF(fvars,tvars,H,C,tau,f,turn="agent",aab=[],observ=[]):
 
 
 
-#compute the log-PDF of a normal with mean mean and
-#constant multiplicative factor in the exponent ivar,
+#compute the log-PDF of a normal with mean mean and 
+#constant multiplicative factor in the exponent ivar, 
 #and log-denominator ldenom
 def normpdf(x, mean, ivar, ldenom):
     num=0.0
@@ -495,12 +493,12 @@ def mvar_normpdf(x, mean, cov):
 
 #draw a sample from a normal distribution with mean given by the middle three
 #values in f (using the f-variables in fvars) and with uniform diagonal covariance
-#with std. deviation gamma
+#with std. deviation gamma 
 def sampleObservation(fvars,f,gamma):
     fb = getbvars(fvars,f)
     fbo=map(lambda fv: NP.random.normal(fv,gamma), fb)
     return fbo
-
+    
 
 #computes the mean of an unweighted array of States
 def sampleMeanUnweighted(samples):
@@ -525,8 +523,8 @@ def sampleMean(samples):
     return avgstate
 
 
-#an obsSet is a combination of two elements -
-#First, a 3D affective vector and
+#an obsSet is a combination of two elements - 
+#First, a 3D affective vector and 
 #Second, the the propositional observation,
 #which is actually class dependent
 #but needs to have operators for addition and division-by-a-scalar defined
@@ -565,7 +563,7 @@ def raw_dist(epa1,epa2):
 def mapSentimentLabeltoEPA(fbeh,cact):
     return map(lambda x: float (x), [fbeh[cact]["e"],fbeh[cact]["p"],fbeh[cact]["a"]])
 
-#raw distance from an epa vector oval to a behaviour vector
+#raw distance from an epa vector oval to a behaviour vector 
 def fdist(oval,fbehv):
     cd=[float(fbehv["e"]),float(fbehv["p"]),float(fbehv["a"])]
     return raw_dist(oval,cd)
@@ -608,7 +606,7 @@ def findNearestBehaviours(oval,fbeh,N):
         bestbs=insert_into(bestbs,(f,fd),N)
     return map(lambda x: x[0],bestbs)
 
-#find nearest identity in dictionary fid to epa-value oval
+#find nearest identity in dictionary fid to epa-value oval        
 def findNearestIdentity(oval,fid):
     return findNearestEPAVector(oval,fid)
 
@@ -640,7 +638,7 @@ def drawSamples(samples,N=-1):
 
 
 
-#print all samples
+#print all samples     
 def printSamples(samples):
     map(lambda x: x.print_val(),samples)
 
@@ -658,7 +656,7 @@ def printHeavySamples(samples,heavy):
 #this will be used for sampling, so includes a weight
 #note that the "State" will change in subclasses of "Agent", but this is defined on-the-fly by simply
 #initialising the "x" component to a certain size array.  However, the "x" component must always contain
-#the "turn" as the first element.
+#the "turn" as the first element. 
 #---------------------------------------------------------------------------------------------------------------------------
 
 class State(object):
@@ -675,7 +673,7 @@ class State(object):
         self.x=x
         #sample weight
         self.weight=weight
-
+        
     def invert_turn(self):
         return self.turnnames.index(invert_turn(self.get_turn()))
 
@@ -715,7 +713,7 @@ class State(object):
         self.f = self.f + nois.flatten(1)
         #nois=(2*NP.random.random((1,9))-1.0)*noiseVector
         #self.tau = self.tau + nois.flatten(1)
-
+    
 
     def print_val(self):
         print 50*"~"
@@ -746,7 +744,7 @@ class Agent(object):
         #parameter of the fundamentals identity prior
         #this first one governs how much variance we expect in the identities - should normally be small
         #if  we don't expect identities to change much
-        #beta_value_agent should be set to 1e-20 if we are using a 6-D aab vector
+        #beta_value_agent should be set to 1e-20 if we are using a 6-D aab vector 
         #the agent is in charge of setting its own identity at each iteration
         self.beta_value_agent=kwargs.get("beta_value_agent",0.01)
         self.beta_value_client=kwargs.get("beta_value_client",0.01)
@@ -795,7 +793,7 @@ class Agent(object):
 
         self.fixed_policy=kwargs.get("fixed_policy",None)
 
-        #some defaults -
+        #some defaults - 
         self.x_avg=0
         self.deflection_avg=0
 
@@ -810,7 +808,7 @@ class Agent(object):
         self.obsResolution = kwargs.get("obsres",0.1)
         self.actResolution = kwargs.get("actres",0.1)
         self.pomcpTimeout = kwargs.get("pomcp_timeout",1)
-
+        
         #initialisation routines
         self.init_covariances()
         self.init_sentiment_dictionaries(self.fifname)
@@ -837,7 +835,7 @@ class Agent(object):
         print "alpha_value_pomcp: ",self.alpha_value_pomcp
         print "gamma_value_pomcp: ",self.gamma_value_pomcp
 
-
+        
     #---------------------------------------------------------------------------
     #initialisation functions
     #---------------------------------------------------------------------------
@@ -869,7 +867,7 @@ class Agent(object):
         self.isigf_unconstrained_b={}
 
 
-
+        
         #sigfa1: betaa2 : beta_value_agent^2 over agent id  (e.g. 0.001)
         #sigfc1: betac2 : beta_value_client^2 over client id (e.g. 0.001)
         #sigf2bc: betabc2 : beta_valueb_client^2 over behaviour  (e.g. 1e+20 or unconstrained)
@@ -880,7 +878,7 @@ class Agent(object):
         self.sigf["agent"]=sigfa1+sigfc1+sigf2ba
         self.isigf["agent"] = NP.linalg.inv(self.sigf["agent"])
 
-
+        
         #for agent with unconstrained behaviour
         self.sigf_unconstrained_b["agent"]=sigfa1+sigfc1+sigf2bc
         self.isigf_unconstrained_b["agent"] = NP.linalg.inv(self.sigf_unconstrained_b["agent"])
@@ -901,12 +899,12 @@ class Agent(object):
         self.isigab = e3/alpha2
 
         self.isiga_pomcp=NP.eye(9,9)/(self.alpha_value_pomcp**2)
-
+        
 
         self.gamma_value2=self.gamma_value*self.gamma_value
 
         #precomputed stuff for computing normal pdfs for 3D vectors
-        theivar=1.0/float(self.gamma_value2)
+        theivar=1.0/float(self.gamma_value2) 
         thedet=math.pow(float(self.gamma_value),3)
         self.ldenom=math.log(math.pow((2*NP.pi),1.5)*thedet)
         self.theivar = theivar*0.5
@@ -921,7 +919,7 @@ class Agent(object):
             self.tdyn=tdyn_female
         else:
             self.tdyn=tdyn_male
-
+            
 
     def init_HC(self):
         #now we construct the functions that will compute the H and C matrices
@@ -933,7 +931,7 @@ class Agent(object):
         Hagent={}
         for j in ["Tbe","Tbp","Tba"]:
             Hagent[j]=filter(lambda xx: has_variable(xx[0],j),self.tdyn)
-
+    
         Cagent=filter(lambda xx: not has_variable(xx[0],"Tb"), self.tdyn)
 
         Hclient={}
@@ -955,7 +953,7 @@ class Agent(object):
         self.iC={}
         self.iC["agent"]=zip(map(lambda x: map(lambda y: tvars.index(y),x[0]),self.C["agent"]),map(lambda x: x[1],self.C["agent"]))
         self.iC["client"]=zip(map(lambda x: map(lambda y: tvars.index(y),x[0]),self.C["client"]),map(lambda x: x[1],self.C["client"]))
-
+        
         self.iH={}
         self.iH["agent"]={}
         self.iH["client"]={}
@@ -963,7 +961,7 @@ class Agent(object):
             self.iH["agent"][j]=zip(map(lambda x: map(lambda y: tvars.index(y),filter(lambda z: not z[1]=="b",x[0])),self.H["agent"][j]),map(lambda x: x[1],self.H["agent"][j]))
             self.iH["client"][j]=zip(map(lambda x: map(lambda y: tvars.index(y),filter(lambda z: not z[1]=="b",x[0])),self.H["client"][j]),map(lambda x: x[1],self.H["client"][j]))
 
-    #this is where "x" is actually defined - here we set it to simply the "turn"
+    #this is where "x" is actually defined - here we set it to simply the "turn" 
     def initialise_x(self,initx):
         return [State.turnnames.index(initx)]
 
@@ -1009,7 +1007,7 @@ class Agent(object):
             self.pomcp_agent.POMCP_eval(beliefState,100,self)
 
 
-
+    
     #---------------------------------------------------------------------------
     #sampling functions
     #---------------------------------------------------------------------------
@@ -1033,7 +1031,7 @@ class Agent(object):
     #overload in subclass
     def sampleXObservation(self,s):
         return s.x
-
+        
 
     #draw a next sample from a currrent one "state" by sampling f, tau and x in that order
     #turn can eventually be removed from the list of arguments, but left in now so other things keep working
@@ -1044,7 +1042,7 @@ class Agent(object):
         #sampleFvar will use the reset mode
         if turn=="creset" or turn=="areset":
             use_turn=turn
-
+        
 
         #these are generic methods that can be outside the class
         (fsample,wgt,instH,instC)=sampleFvar(fvars,tvars,self.iH,self.iC,self.isiga,self.isigf,state.tau,state.f,use_turn,aab,observ)
@@ -1059,14 +1057,14 @@ class Agent(object):
 
 
     #function that must be overloaded in any subclass
-    #here it is just a check on the turn
+    #here it is just a check on the turn 
     def evalSampleXvar(self,sample,xobs):
         #check that turn is the same only
         if sample.x[0] == xobs[0]:
             return 1.0
         else:
             return 0.0
-
+            
 
     #add some noise to samples ("roughening" - see Gordon et al. 1993 or Chapt. 10 of Nando's book)
     def roughenSamples(self,samples):
@@ -1089,12 +1087,12 @@ class Agent(object):
     #and an affective observation observ and an  observation xobserv, update the samples
     #by first drawing an unweighted set, propagating those forward, computing the weights
     #and finally computing the deflection
-    def propagate_forward(self,aab,observ,xobserv=[],paab=None,verb=False,plotter=None,agent=eTurn.simulator):
+    def propagate_forward(self,aab,observ,xobserv=[],paab=None,verb=False):
 
         if False and verb:
             print 100*"!","samples before resample:"
             printSamples(self.samples)
-
+        
         #resample to get an unweighted set
         new_samples=drawSamples(self.samples)
 
@@ -1108,14 +1106,6 @@ class Agent(object):
             print 100*"!","unweighted set:"
             printSamplesFW(new_samples)
 
-        #this is where you send data to the plotter
-        if (None != plotter):
-            if (eTurn.simulator == agent):
-                plotter.m_SimulatorSamples = NP.array(map(lambda x: x.f.tolist(), new_samples)).transpose().tolist()
-            #else eTurn.learner == agent
-            else:
-                plotter.m_LearnerSamples = NP.array(map(lambda x: x.f.tolist(), new_samples)).transpose().tolist()
-
 
         #propagate forward
         self.samples=[]
@@ -1127,12 +1117,12 @@ class Agent(object):
             newweight = newsample.weight+theweight
 
             thexweight = self.evalSampleXvar(newsample,xobserv)
-
+            
 
             newsample.weight=math.exp(newweight)*thexweight
             totweight += newsample.weight
             self.samples.append(newsample)
-
+        
         print 20*"%"," total weight: ",totweight
         while totweight<1e-20:
             #reset - the total weight has collapsed and the particle filter is broken
@@ -1147,7 +1137,7 @@ class Agent(object):
                 newsample = self.sampleNext(fvars,tvars,sample,"creset",aab,observ,paab)
                 theweight = 0.0
                 newweight = newsample.weight+theweight
-
+                
                 thexweight = self.evalSampleXvar(newsample,xobserv)
 
                 newsample.weight=math.exp(newweight)*thexweight
@@ -1163,7 +1153,7 @@ class Agent(object):
         avgstate=sampleMean(self.samples)
         self.deflection_avg=NP.dot(avgstate.tau-avgstate.f,avgstate.tau-avgstate.f)
         self.x_avg=avgstate.x
-
+        
 
         #prune POMCP tree if we are doing pomcp
         if self.use_pomcp:
@@ -1186,8 +1176,8 @@ class Agent(object):
     def get_prop_action(self,state,rollout=False,samplenum=0):
         return 0
 
-
-    #and is used in XXXYYYZZZ methods
+        
+    #and is used in XXXYYYZZZ methods 
     #it returns a default (null) action that is used when there is a "client" turn
     #using 0 as the null propositional action is problematic and should be fixed
     def get_null_action(self):
@@ -1203,14 +1193,14 @@ class Agent(object):
             paab = self.get_prop_action(state)
         else:
             (aab,paab)=self.get_null_action()
-
+            
         return (aab,paab)
 
-    #get the predicted actions for the client, based on
+    #get the predicted actions for the client, based on 
     #what the agent would normally do in the same situation
     def get_default_predicted_action(self,state):
         #default ACT action selectors (see Bayesact paper)
-        avgf=self.sample_next_f(state,self.nsamples_avgf)
+        avgf=self.sample_next_f(state,self.nsamples_avgf) 
         aab=map(lambda x: float(x), avgf[3:6])
         paab = self.get_prop_action(state)
         return (aab,paab)
@@ -1218,22 +1208,22 @@ class Agent(object):
 
     #what the agent should call to get a next action if using the default ACT choice
     #returns a null action if it is not the agent's turn
-    #overload for subclass to define its own method for getting a default action -
-    #this will be used if pomcp is not turned on to choose an action, and as the
+    #overload for subclass to define its own method for getting a default action - 
+    #this will be used if pomcp is not turned on to choose an action, and as the 
     #first action chosen by POMCP when building a new branch of the planning tree
     def get_default_action(self,state):
         if state.get_turn()=="agent":
             (aab,paab)=self.get_default_predicted_action(state)
         else:
             (aab,paab)=self.get_null_action()
-
+            
         return (aab,paab)
 
     #the greedy action selection mechanism as described in the Bayesact paper
     def get_greedy_action(self,state,paab=None):
         if paab==None:
             paab = self.get_prop_action(state)
-        #with some hard-coded constants
+        #with some hard-coded constants 
 	N=50
 	M=20
         fvsamples=[]
@@ -1271,8 +1261,8 @@ class Agent(object):
             (aab,paab)= self.get_default_action(state)
             #print "myopic version: ",aab, " paab: ",paab
 
-
-        #other options:
+        
+        #other options: 
 
         #aab = self.get_default_action_noinertia(state)
         #print "myopic version (no inertia): ",aab
@@ -1295,7 +1285,7 @@ class Agent(object):
 
 
         return (aab,paab)
-
+    
     #compute the deflection from a the current set of weighted samples
     def compute_deflection(self):
         self.deflection=0
@@ -1305,13 +1295,13 @@ class Agent(object):
             sumw += sample.weight
         self.deflection /= sumw
         return self.deflection
-
+        
     #get the average state from a weighted set of samples
     def getAverageState(self):
         avgstate=sampleMean(self.samples)
         return avgstate
-
-
+    
+    
     def get_avg_ids(self,f):
         aid=findNearestIdentity(map(lambda x: x[1],filter(lambda x: x[0][1]=="a",zip(fvars,f))),self.fidentities_agent)
         cid=findNearestIdentity(map(lambda x: x[1],filter(lambda x: x[0][1]=="c",zip(fvars,f))),self.fidentities_client)
@@ -1328,19 +1318,19 @@ class Agent(object):
             if cnt_ag.has_key(aid):
                 cnt_ag[aid] += 1
             else:
-                cnt_ag[aid] = 0
+                cnt_ag[aid] = 0 
         cnt_cl={}
         for cid in client_ids:
             if cnt_cl.has_key(cid):
                 cnt_cl[cid] += 1
             else:
-                cnt_cl[cid] = 0
+                cnt_cl[cid] = 0 
 
         cnt_ags = sorted(cnt_ag.items(), key=lambda x: x[1],reverse=True)
         cnt_cls=sorted(cnt_cl.items(), key=lambda x: x[1],reverse=True)
         return (cnt_ags,cnt_cls)
 
-
+        
 
     #----------------------------------------------------------------------------------
     #POMCP functions
@@ -1376,7 +1366,7 @@ class Agent(object):
         newreward = self.reward(state,(aab,paab))
         #turn is given as a noise-free observation here embedded in x
         return (newsample,(observ,xobserv),newreward)
-
+        
     #rollout is a boolean flag  - if we are doing a rollout, then
     #this sample function computes and returns the rollout policy
     #samplenum is the number of times the oracle has been called at the node in the pomcp tree
@@ -1384,13 +1374,13 @@ class Agent(object):
     def oracle(self,state,rollout=False,samplenum=None):
         #continuous component is just a 3D EPA vector which is the null value on client turn
         #the discrete component of the action is class dependent
-        #here, if it is the client's turn, we simply use the null action for both
+        #here, if it is the client's turn, we simply use the null action for both 
         #and in any case, the propositional action is always the same (0 = null)
         (a,paab)  = self.get_null_action()
 
         if state.get_turn()=="agent":
             paab = self.get_prop_action(state,rollout,samplenum)
-
+            
             if not self.fixed_policy==None:
                 return (self.fixed_policy[paab],paab)
             #the first sample returned is the default (ACT) action
@@ -1401,7 +1391,7 @@ class Agent(object):
                 #and paab is always 0 anyways
                 #isiga_pomcp is much smaller than isiga
                 usesiga=self.isiga_pomcp
-                #when doing a rollout, want to cast a wider net?
+                #when doing a rollout, want to cast a wider net? 
                 if rollout:
                     usesiga=self.isiga
                 (tmpfv,wgt,tmpH,tmpC)=sampleFvar(fvars,tvars,self.iH,self.iC,usesiga,self.isigf_unconstrained_b,
@@ -1420,8 +1410,8 @@ class Agent(object):
 
     #is true if obs1 and obs2 match to within resolv
     #observations are a tuple, with first component is the observation of behaviour (non-zero on client turn)
-    #second component is an array of x values.
-    #this must be overloaded in any subclass
+    #second component is an array of x values. 
+    #this must be overloaded in any subclass 
     def observationMatch(self,obs1,obs2,resolv):
         return ( obs1[1]==obs2[1] and math.sqrt(raw_dist(obs2[0],obs1[0])) < resolv)
 
@@ -1444,10 +1434,10 @@ class Agent(object):
     #check to see if action is in actionSet (to within actres resolution)
     def hasAction(self,actionSet,action,actres):
         for a1 in actionSet:
-            if a1[1]==action[1] and math.sqrt(raw_dist(action[0],a1[0])) < actres:
+            if a1[1]==action[1] and math.sqrt(raw_dist(action[0],a1[0])) < actres:       
                 return True
         return False
-
+                
 
     #distance bewteen two actions - None means infinite
     #if == is not defined for the propositional action, then this must be overloaded in a subclass
@@ -1467,8 +1457,8 @@ class Agent(object):
 
 
 
-    #an obsSet is a combination of two elements -
-    #First, a N-d continuous vector and
+    #an obsSet is a combination of two elements - 
+    #First, a N-d continuous vector and 
     #Second, the the propositional observation,
     #which is actually class dependent
     #so here we depend on + and /scalar being defined for the observation arrays
@@ -1487,7 +1477,7 @@ class Agent(object):
         else:
             return []
 
-
+            
     #overload in subclass
     def reward(self,state,action=None):
         # a generic deflection-based reward
