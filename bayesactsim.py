@@ -310,10 +310,6 @@ def bayesactsim(argv, plotter=None, verbose=False):
                 #To plot data
                 if (None != plotter):
                     plotter.plot3D()
-                print learn_verbose
-                print simul_verbose
-                print verbose
-                print "#######################"
 
 
                 #I think these should be based on fundamentals, not transients
