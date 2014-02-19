@@ -1111,10 +1111,10 @@ class Agent(object):
         #this is where you send data to the plotter
         if (None != plotter):
             if (eTurn.simulator == agent):
-                plotter.m_SimulatorSamples = NP.array(map(lambda x: x.f.tolist(), new_samples)).transpose().tolist()
+                plotter.m_SimulatorSamples = NP.array(map(lambda x: x.f, new_samples)).transpose().tolist()
             #else eTurn.learner == agent
             else:
-                plotter.m_LearnerSamples = NP.array(map(lambda x: x.f.tolist(), new_samples)).transpose().tolist()
+                plotter.m_LearnerSamples = NP.array(map(lambda x: x.f, new_samples)).transpose().tolist()
 
 
         #propagate forward
