@@ -203,6 +203,6 @@ class cPlotPanel(wx.Panel):
         with self.m_Lock:
             self.m_Canvas.draw()
 
-    def clearCanvas(self):
+    def clearAxes(self):
         with self.m_Lock:
             self.m_Axes.cla()
