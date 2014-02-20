@@ -274,6 +274,14 @@ def bayesactinteractive(argv, plotter=None,verbose=False):
     #the following two initialisation calls should be inside the Agent constructor to keep things cleaner
     learn_avgs=learn_agent.initialise_array(learn_tau_init,learn_prop_init,learn_initx)
 
+
+    #To plot initial data
+    if (None != plotter):
+        #to send the initial sentiments to the plotter
+        learn_agent.sendSamplesToPlotter(learn_agent.samples,plotter,eTurn.learner)
+        plotter.plot3D()
+
+
     print "learner average sentiments (f): "
     learn_avgs.print_val()
 
