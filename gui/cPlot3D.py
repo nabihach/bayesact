@@ -55,7 +55,7 @@ class cPlotPanel(cPlt.cPlotPanel):
         #print "\n\n\n\n\n\njdaidjasoidjasiodjas"
 
 
-    def plotScatter(self, iXData, iYData, iZData=None, iRedraw=False, iUpdate=False, **kwargs):
+    def plotScatter(self, iXData, iYData, iZData=None, iAutoScaling=False, iRedraw=False, iUpdate=False, **kwargs):
         '''
         if (True == iRedraw):
             self.m_Axes.cla()
@@ -75,9 +75,9 @@ class cPlotPanel(cPlt.cPlotPanel):
             self.redrawPlot()
         '''
         if (True == iRedraw):
-            self.m_Axes.cla()
+            self.clearAxes()
 
-        if (True):
+        if (False == iAutoScaling):
             tempXAxis = list(self.m_Axes.get_xlim())
             tempYAxis = list(self.m_Axes.get_ylim())
             tempZAxis = list(self.m_Axes.get_zlim())

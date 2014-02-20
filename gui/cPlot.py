@@ -202,3 +202,7 @@ class cPlotPanel(wx.Panel):
         #self.m_Axes.figure.canvas.draw()
         with self.m_Lock:
             self.m_Canvas.draw()
+
+    def clearAxes(self):
+        with self.m_Lock:
+            self.m_Axes.cla()

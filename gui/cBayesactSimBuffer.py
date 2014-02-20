@@ -44,8 +44,6 @@ class cBayesactSimBuffer:
         # simulator is 1
         self.m_Turn = -1
 
-        self.m_ReadFileFlag = False
-
 
     def parseStream(self, iStream):
         for line in iStream:
@@ -124,7 +122,7 @@ class cBayesactSimBuffer:
 
         while(self.m_KeepAlive):
             self.parseStream(stream)
-            if (True == self.m_ReadFileFlag):
+            if (None != iFileName):
                 self.m_KeepAlive = False
 
         if (self.isMacOrLinux()):

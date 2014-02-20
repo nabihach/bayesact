@@ -34,7 +34,4 @@ class cBayesactSimGui(object):
 
 
     def plot3D(self):
-        self.m_PlotBayesactSim.m_LearnerSamples = self.m_LearnerSamples
-        self.m_PlotBayesactSim.m_SimulatorSamples = self.m_SimulatorSamples
-
-        self.m_PlotBayesactSim.plotBayesactSim([self.m_PlotBayesactSim.m_LearnerSamples, self.m_PlotBayesactSim.m_SimulatorSamples])
+        self.m_PlotBayesactSim.plotBayesactSim([self.m_LearnerSamples, self.m_SimulatorSamples])

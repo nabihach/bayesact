@@ -18,7 +18,6 @@ import cProfile
 import sys
 import threading
 sys.path.append("./gui/")
-from cBayesactSimGui import cBayesactSimGui
 from cEnum import eTurn
 
 def bayesactsim(argv, plotter=None, verbose=False):
@@ -256,6 +255,14 @@ def bayesactsim(argv, plotter=None, verbose=False):
             learn_avgs=learn_agent.initialise_array(learn_tau_init,learn_prop_init,learn_initx)
             simul_avgs=simul_agent.initialise_array(simul_tau_init,simul_prop_init,simul_initx)
 
+            #To plot initial data
+            if (None != plotter):
+                #to send the initial sentiments to the plotter
+                learn_agent.sendSamplesToPlotter(learn_agent.samples,plotter,eTurn.learner)
+                simul_agent.sendSamplesToPlotter(simul_agent.samples,plotter,eTurn.simulator)
+                plotter.plot3D()
+
+
             print "simulator average: "
             simul_avgs.print_val()
 
@@ -431,7 +438,7 @@ def main(argv):
     if (False == plot):
         bayesactsim(argv,None,verbose)
     else:
-        print verbose
+        from cBayesactSimGui import cBayesactSimGui
         plotter = cBayesactSimGui()
         bayesactSimThread = threading.Thread(target=bayesactsim, args=(argv,plotter,verbose))
         plotter.setThread(bayesactSimThread)
