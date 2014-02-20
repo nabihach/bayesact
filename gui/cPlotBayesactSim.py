@@ -74,31 +74,33 @@ class cPlotBayesactSim(object):
 
 
     def plotOnAxes3D(self, iPlotPanel):
-        # Learner's sentiments on self and other, green and pink respectively
-        iPlotPanel.plotScatter(
-            self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_SelfMultiplier)],
-            self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_SelfMultiplier)],
-            self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_ZAxisItem, cEPAConstants.m_SelfMultiplier)],
-            iAutoScaling=False, iRedraw=True, iUpdate=False, marker="o", s=50, c="green", alpha=1, animated=False)
+        if (0 < len(self.m_LearnerSamples)):
+            # Learner's sentiments on self and other, green and pink respectively
+            iPlotPanel.plotScatter(
+                self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_SelfMultiplier)],
+                self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_SelfMultiplier)],
+                self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_ZAxisItem, cEPAConstants.m_SelfMultiplier)],
+                iAutoScaling=False, iRedraw=True, iUpdate=False, marker="o", s=50, c="green", alpha=1, animated=False)
 
-        iPlotPanel.plotScatter(
-            self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_OtherMultiplier)],
-            self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_OtherMultiplier)],
-            self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_ZAxisItem, cEPAConstants.m_OtherMultiplier)],
-            iAutoScaling=False, iRedraw=False, iUpdate=False, marker="o", s=50, c="pink", alpha=1, animated=False)
+            iPlotPanel.plotScatter(
+                self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_OtherMultiplier)],
+                self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_OtherMultiplier)],
+                self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_ZAxisItem, cEPAConstants.m_OtherMultiplier)],
+                iAutoScaling=False, iRedraw=False, iUpdate=False, marker="o", s=50, c="pink", alpha=1, animated=False)
 
-        # Simulator's sentiments on self and other, goldenrod and blue respectively
-        iPlotPanel.plotScatter(
-            self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_SelfMultiplier)],
-            self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_SelfMultiplier)],
-            self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_ZAxisItem, cEPAConstants.m_SelfMultiplier)],
-            iAutoScaling=False, iRedraw=False, iUpdate=False, marker="o", s=50, c="goldenrod", alpha=1, animated=False)
+        if (0 < len(self.m_SimulatorSamples)):
+            # Simulator's sentiments on self and other, goldenrod and blue respectively
+            iPlotPanel.plotScatter(
+                self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_SelfMultiplier)],
+                self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_SelfMultiplier)],
+                self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_ZAxisItem, cEPAConstants.m_SelfMultiplier)],
+                iAutoScaling=False, iRedraw=False, iUpdate=False, marker="o", s=50, c="goldenrod", alpha=1, animated=False)
 
-        iPlotPanel.plotScatter(
-            self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_OtherMultiplier)],
-            self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_OtherMultiplier)],
-            self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_ZAxisItem, cEPAConstants.m_OtherMultiplier)],
-            iAutoScaling=False, iRedraw=False, iUpdate=False, marker="o", s=50, c="blue", alpha=1, animated=False)
+            iPlotPanel.plotScatter(
+                self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_OtherMultiplier)],
+                self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_OtherMultiplier)],
+                self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_ZAxisItem, cEPAConstants.m_OtherMultiplier)],
+                iAutoScaling=False, iRedraw=False, iUpdate=False, marker="o", s=50, c="blue", alpha=1, animated=False)
 
         iPlotPanel.m_Axes.set_xlabel(cEPAConstants.m_EPALabels[self.m_XAxisItem])
         iPlotPanel.m_Axes.set_ylabel(cEPAConstants.m_EPALabels[self.m_YAxisItem])
@@ -107,27 +109,29 @@ class cPlotBayesactSim(object):
 
 
     def plotOnAxes2D(self, iPlotPanel, iXAxisItem, iYAxisItem):
-        # Learner's sentiments on self and other, green and pink respectively
-        iPlotPanel.plotScatter(
-            self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_SelfMultiplier)],
-            self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_SelfMultiplier)],
-            iAutoScaling=False, iRedraw=True, iUpdate=False, marker="o", s=50, c="green", alpha=1, animated=False)
+        if (0 < len(self.m_LearnerSamples)):
+            # Learner's sentiments on self and other, green and pink respectively
+            iPlotPanel.plotScatter(
+                self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_SelfMultiplier)],
+                self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_SelfMultiplier)],
+                iAutoScaling=False, iRedraw=True, iUpdate=False, marker="o", s=50, c="green", alpha=1, animated=False)
 
-        iPlotPanel.plotScatter(
-            self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_OtherMultiplier)],
-            self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_OtherMultiplier)],
-            iAutoScaling=False, iRedraw=False, iUpdate=False, marker="o", s=50, c="pink", alpha=1, animated=False)
+            iPlotPanel.plotScatter(
+                self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_OtherMultiplier)],
+                self.m_LearnerSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_OtherMultiplier)],
+                iAutoScaling=False, iRedraw=False, iUpdate=False, marker="o", s=50, c="pink", alpha=1, animated=False)
 
-        # Simulator's sentiments on self and other, goldenrod and blue respectively
-        iPlotPanel.plotScatter(
-            self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_SelfMultiplier)],
-            self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_SelfMultiplier)],
-            iAutoScaling=False, iRedraw=False, iUpdate=False, marker="o", s=50, c="goldenrod", alpha=1, animated=False)
+        if (0 < len(self.m_SimulatorSamples)):
+            # Simulator's sentiments on self and other, goldenrod and blue respectively
+            iPlotPanel.plotScatter(
+                self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_SelfMultiplier)],
+                self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_SelfMultiplier)],
+                iAutoScaling=False, iRedraw=False, iUpdate=False, marker="o", s=50, c="goldenrod", alpha=1, animated=False)
 
-        iPlotPanel.plotScatter(
-            self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_OtherMultiplier)],
-            self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_OtherMultiplier)],
-            iAutoScaling=False, iRedraw=False, iUpdate=False, marker="o", s=50, c="blue", alpha=1, animated=False)
+            iPlotPanel.plotScatter(
+                self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_XAxisItem, cEPAConstants.m_OtherMultiplier)],
+                self.m_SimulatorSamples[self.getSentimentEPAIndex(self.m_YAxisItem, cEPAConstants.m_OtherMultiplier)],
+                iAutoScaling=False, iRedraw=False, iUpdate=False, marker="o", s=50, c="blue", alpha=1, animated=False)
 
         iPlotPanel.m_Axes.set_xlabel(cEPAConstants.m_EPALabels[self.m_XAxisItem])
         iPlotPanel.m_Axes.set_ylabel(cEPAConstants.m_EPALabels[self.m_YAxisItem])

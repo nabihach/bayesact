@@ -41,7 +41,7 @@ class cPlotPanel(cPlt.cPlotPanel):
 
     def plotScatter(self, iXData, iYData, iAutoScaling=False, iRedraw=False, iUpdate=True, **kwargs):
         if (True == iRedraw):
-            self.m_Axes.cla()
+            self.clearCanvas()
         if (False == iAutoScaling):
             tempXAxis = list(self.m_Axes.get_xlim())
             tempYAxis = list(self.m_Axes.get_ylim())

@@ -75,7 +75,7 @@ class cPlotPanel(cPlt.cPlotPanel):
             self.redrawPlot()
         '''
         if (True == iRedraw):
-            self.m_Axes.cla()
+            self.clearCanvas()
 
         if (False == iAutoScaling):
             tempXAxis = list(self.m_Axes.get_xlim())
