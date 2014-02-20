@@ -1108,14 +1108,9 @@ class Agent(object):
             print 100*"!","unweighted set:"
             printSamplesFW(new_samples)
 
-        #this is where you send data to the plotter
+        #send new samples to plotter
         if (None != plotter):
-            if (eTurn.simulator == agent):
-                plotter.m_SimulatorSamples = NP.array(map(lambda x: x.f, new_samples)).transpose().tolist()
-            #else eTurn.learner == agent
-            else:
-                plotter.m_LearnerSamples = NP.array(map(lambda x: x.f, new_samples)).transpose().tolist()
-
+            self.sendSamplesToPlotter(new_samples,plotter,agent)
 
         #propagate forward
         self.samples=[]
@@ -1495,3 +1490,10 @@ class Agent(object):
         reward = -1.0*NP.dot(state.f-state.tau,state.f-state.tau)
         return reward
 
+
+    def sendSamplesToPlotter(self,samples,plotter,agent):
+        if (eTurn.simulator == agent):
+            plotter.m_SimulatorSamples = NP.array(map(lambda x: x.f, samples)).transpose().tolist()
+            #else eTurn.learner == agent
+        else:
+            plotter.m_LearnerSamples = NP.array(map(lambda x: x.f, samples)).transpose().tolist()
