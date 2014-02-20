@@ -18,7 +18,6 @@ import cProfile
 import sys
 import threading
 sys.path.append("./gui/")
-from cBayesactSimGui import cBayesactSimGui
 from cEnum import eTurn
 
 def bayesactsim(argv, plotter=None, verbose=False):
@@ -431,6 +430,7 @@ def main(argv):
     if (False == plot):
         bayesactsim(argv,None,verbose)
     else:
+        from cBayesactSimGui import cBayesactSimGui
         plotter = cBayesactSimGui()
         bayesactSimThread = threading.Thread(target=bayesactsim, args=(argv,plotter,verbose))
         plotter.setThread(bayesactSimThread)
