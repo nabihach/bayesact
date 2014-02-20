@@ -112,8 +112,9 @@ PLOTTING GUI:
 - use ctrl+a or ctrl+s to adjust y-axis
 - use ctrl+z or ctrl+x to adjust z-axis
 - use ctrl+d to reset axes
-- use ctrl++ or ctrl+- to zoom in or out
+- use ctrl+= or ctrl+- to zoom in or out
 - use left click to pan
+- modify m_MaxPlotSamples in cConstants.py to adjust number of samples for each agent to plot respectively
 
 --------------------------
 
