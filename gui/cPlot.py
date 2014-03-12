@@ -97,6 +97,10 @@ class cPlotPanel(wx.Panel):
 
 
     def onMouseRelease(self, iEvent):
+        # To be used with cOptions2D, else disable this functionality
+        if not(isinstance(self.m_ParentPlotFrame, cPlotFrame)):
+            return
+
         if (None != self.m_ParentPlotFrame.m_ParentOptionsPanel):
             self.m_ParentPlotFrame.m_ParentOptionsPanel.switchFocus(self.m_ParentPlotFrame)
 
@@ -175,6 +179,7 @@ class cPlotPanel(wx.Panel):
         self.m_Axes.add_patch(iPatch)
         #self.m_Axes.draw_artist(iPatch)
 
+    # This thing doesn't seem to work right now
     def redrawPlot(self):
         print self.m_n
         self.m_n += 1
@@ -188,21 +193,18 @@ class cPlotPanel(wx.Panel):
 
 
     def redrawAxes(self):
-        # This thing will draw really really slowly if bayesactsim is threaded, make a separate process
+        # This thing will draw really really slowly if you are parsing and plotting at the same time
+        # Parsing as in parsing it from a pipe
         with self.m_Lock:
             #self.m_Canvas.restore_region(self.m_Background)
             #self.m_Axes.draw_artist(self.m_Axes.patch)
             #self.m_Canvas.blit()
-            self.m_Axes.figure.canvas.draw()
+            self.m_Canvas.draw()
         #self.m_Background = [self.m_Canvas.copy_from_bbox(self.m_Axes.bbox)]
         #print self.m_Background
 
 
-    def redrawCanvas(self):
-        #self.m_Axes.figure.canvas.draw()
-        with self.m_Lock:
-            self.m_Canvas.draw()
-
+    # Remember to call redrawAxes
     def clearAxes(self):
         with self.m_Lock:
             self.m_Axes.cla()

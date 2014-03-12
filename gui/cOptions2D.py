@@ -2,8 +2,8 @@ import threading
 from cPlotBayesactSim import cPlotBayesactSim
 from cEnum import eAxes, eEPA
 import wx
-import cPlot2D as cPlt2D
-import cOptions.cOptionsPanel
+import cPlotEPA2D
+from cOptions import cOptionsPanel
 
 class cOptionsPanel2D(cOptionsPanel):
 
@@ -30,9 +30,7 @@ class cOptionsPanel2D(cOptionsPanel):
 
 
     def onPlotBayesactSim2D(self, iEvent):
-        plotBayesactSim = cPlotBayesactSim(self.m_FocusedFrame,
-                                            eEPA.evaluation,
-                                            eEPA.potency)
+        plotBayesactSim = cPlotBayesactSim(self.m_FocusedFrame.m_PlotPanel)
         self.m_FocusedFrame.m_PlotBayesactSim = plotBayesactSim
         self.m_FocusedFrame.m_PlotBayesactSimThread = threading.Thread(target=plotBayesactSim.runOnPlot)
         self.m_FocusedFrame.m_PlotBayesactSimThread.daemon = True
@@ -47,8 +45,10 @@ class cOptionsPanel2D(cOptionsPanel):
 
 
     def onMake2D(self, iEvent):
-        frame = cPlt2D.cPlotFrame(self, title="Plot{}".format(len(self.m_PlotFrames) + 1), size=(800, 600))
-        frame.initPanel(style=wx.SIMPLE_BORDER, pos=(0, 0), size=(800, 600))
+        frame = cPlotEPA2D.cPlotFrame(self, title="Plot{}".format(len(self.m_PlotFrames) + 1), size=(800, 600))
+        frame.initPanel(iXAxisItem=eEPA.evaluation,
+                        iYAxisItem=eEPA.potency,
+                        style=wx.SIMPLE_BORDER, pos=(0, 0), size=(800, 600))
         frame.Show()
         self.m_PlotFrames.append(frame)
         self.switchFocus(frame)

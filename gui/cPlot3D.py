@@ -1,6 +1,6 @@
 from cEnum import eAxes
 from cConstants import cPlotConstants, cPlot3DConstants
-import cPlot as cPlt
+import cPlot
 import wx
 import numpy as NP
 from matplotlib.figure import Figure
@@ -11,18 +11,18 @@ import mpl_toolkits.mplot3d.art3d as art3d
 import mpl_toolkits.mplot3d.proj3d as proj3d
 
 
-class cPlotFrame(cPlt.cPlotFrame):
+class cPlotFrame(cPlot.cPlotFrame):
     def __init__(self, iParent, **kwargs):
-        cPlt.cPlotFrame.__init__(self, iParent, **kwargs)
+        cPlot.cPlotFrame.__init__(self, iParent, **kwargs)
 
     def initPanel(self, **kwargs):
         self.m_PlotPanel = cPlotPanel(self, **kwargs)
 
 
-class cPlotPanel(cPlt.cPlotPanel):
+class cPlotPanel(cPlot.cPlotPanel):
 
     def __init__(self, iParent, **kwargs):
-        cPlt.cPlotPanel.__init__(self, iParent, **kwargs)
+        cPlot.cPlotPanel.__init__(self, iParent, **kwargs)
 
         self.m_Figure = Figure()
 
