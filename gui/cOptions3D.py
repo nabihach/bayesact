@@ -3,7 +3,7 @@ from cPlotBayesactSim import cPlotBayesactSim
 from cEnum import eAxes, eEPA
 from cOptions import cOptionsPanel
 import wx
-import cPlot3D as cPlt3D
+import cPlotEPA3D
 
 class cOptionsPanel3D(cOptionsPanel):
 
@@ -39,8 +39,11 @@ class cOptionsPanel3D(cOptionsPanel):
 
 
     def onMake3D(self, iEvent):
-        frame = cPlt3D.cPlotFrame(self, title="Plot{}".format(len(self.m_PlotFrames) + 1), size=(700, 550))
-        frame.initPanel(style=wx.SIMPLE_BORDER, pos=(0, 0), size=(700, 550))
+        frame = cPlotEPA3D.cPlotFrame(self, title="Plot{}".format(len(self.m_PlotFrames) + 1), size=(700, 550))
+        frame.initPanel(iXAxisItem=eEPA.evaluation,
+                        iYAxisItem=eEPA.potency,
+                        iZAxisItem=eEPA.activity,
+                        style=wx.SIMPLE_BORDER, pos=(0, 0), size=(700, 550))
         frame.Show()
         #frame.m_PlotPanel.m_Axes.figure.canvas.draw()
         self.m_PlotFrames.append(frame)
@@ -48,10 +51,8 @@ class cOptionsPanel3D(cOptionsPanel):
 
 
     def onPlotBayesactSim3D(self, iEvent):
-        plotBayesactSim = cPlotBayesactSim(self.m_FocusedFrame,
-                                            eEPA.evaluation,
-                                            eEPA.potency,
-                                            eEPA.activity)
+        plotBayesactSim = cPlotBayesactSim(self.m_FocusedFrame.m_PlotPanel)
+
         self.m_FocusedFrame.m_PlotBayesactSim = plotBayesactSim
         self.m_FocusedFrame.m_PlotBayesactSimThread = threading.Thread(target=plotBayesactSim.runOnPlot)
         self.m_FocusedFrame.m_PlotBayesactSimThread.daemon = True

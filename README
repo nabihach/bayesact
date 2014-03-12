@@ -106,6 +106,7 @@ python tutorgui2.py
 
 --------------------------
 PLOTTING GUI:
+- Call bayesactgui.py to use
 - Requires wxPython3.0, matplotlib, and wxmpl2.0 installed
 - run bayesactsim or bayesactinteractive with -o option to display a 3D plot
 - use ctrl+q or ctrl+w to adjust x-axis

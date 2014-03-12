@@ -1,5 +1,5 @@
 from sys import platform as _platform
-
+from cEnum import eGender
 
 class cWindowsOSConstants:
     m_ProcessTerminate = 1
@@ -42,12 +42,12 @@ class cPlotConstants:
     m_UnZoomKey = "ctrl+-"
     m_ResetAxesKey = "ctrl+d"
 
-    m_IncreaseXAxisKey = "ctrl+q"
-    m_DecreaseXAxisKey = "ctrl+w"
+    m_IncreaseXAxisKey = "ctrl+w"
+    m_DecreaseXAxisKey = "ctrl+q"
     m_IncreaseYAxisKey = "ctrl+a"
     m_DecreaseYAxisKey = "ctrl+s"
-    m_IncreaseZAxisKey = "ctrl+z"
-    m_DecreaseZAxisKey = "ctrl+x"
+    m_IncreaseZAxisKey = "ctrl+x"
+    m_DecreaseZAxisKey = "ctrl+z"
 
     # 3 represents right click
     m_MousePanButton = 3
@@ -70,11 +70,15 @@ class cPlot2DConstants:
     m_MouseDragSensitivity = 1
     m_PanSensitivity = 1.0 / (m_MouseDragSensitivity * 100)
 
+    # This is for getting the dpi for figsize
+    # X is taken from (400 / 100) * 1.2
+    # Y is taken from (300 / 100) * 1.2
+    m_FigRatioX = 0.012
+    m_FigRatioY = 0.012
 
-    m_FigSize = (10,7)
-
-    # Left, Bottom, Width, Height, all fractions of figure width and height in range [0,1]
-    m_Rect = [0.1, 0.1, 0.8, 0.8]
+    # Used for adjusting the position and size of the graph is on the panel
+    # Left, Bottom, Width, Height, all of which are fractions of figure width and height or the panel in the range [0,1]
+    m_Rect = [0.17, 0.12, 0.8, 0.8]
 
 
 class cPlot3DConstants:
@@ -99,3 +103,115 @@ class cParseConstants:
     m_MeanSimulatorPhrase1 = "simulator f is:"
     m_MeanSimulatorPhrase2 = "simulator average:"
     m_fValuesPhrase = "^f : \["
+
+
+class cDataFilesConstants:
+    m_fidentities = "fidentities.dat"
+
+
+# Please keep the elements in the arrays in the same order as their name and key counterparts
+class cInstitutionsConstants:
+    m_AnyGender          = "Any Gender"
+    m_Male               = "Male"
+    m_Female             = "Female"
+
+    m_Gender             = ["Any", "Male", "Female"]
+
+    m_Institution        = ["Any",
+                            "Lay",
+                            "Business",
+                            "Law",
+                            "Politics",
+                            "Academe",
+                            "Medicine",
+                            "Religion",
+                            "Family",
+                            "Sexual"]
+
+    m_WhatIsThis         = ["what",
+                            "is",
+                            "this",
+                            "?"
+                            ]
+
+    m_GenderKey          = [0b11,
+                            0b10,
+                            0b01]
+
+    m_InstitutionKey     = [0b111111111,
+                            0b100000000,
+                            0b010000000,
+                            0b001000000,
+                            0b000100000,
+                            0b000010000,
+                            0b000001000,
+                            0b000000100,
+                            0b000000010,
+                            0b000000001]
+
+    m_WhatIsThisKey      = [0b111,
+                            0b001,
+                            0b010,
+                            0b100]
+
+
+class cOptionsAgentConstants:
+    m_ClientMultipleIdentity = False
+
+
+class cOptionSimConstants:
+    #0: knows own id, not client id
+    #1: knows own id, knows client id is one of num_confusers possibilities
+    #2: knows own id, knows client id
+    #3: doesn't know own id, doesn't know client id
+    #m_KnowledgeChoices = ["0", "1", "2", "3"]
+    m_KnowledgeChoices = ["0", "2", "3"]
+
+    m_GenderChoices = ["Male", "Female"]
+    m_UniformDrawsChoices = ["True", "False"]
+
+    # Agent and client id to be set in options
+
+    m_NumberOfSamples                     = "Number of Samples"
+    m_NumberOfTrials                      = "Number of Trials"
+    m_NumberOfExperiments                 = "Number of Experiments"
+    m_ClientKnowledge                     = "Client Knowledge"
+    m_AgentKnowledge                      = "Agent Knowledge"
+    m_MaxHorizon                          = "Max Horizon"
+    m_UniformDraws                        = "Uniform Draws"
+    m_RougheningNoise                     = "Roughening Noise"
+    m_EnvironmentNoise                    = "Environment Noise"
+    m_GammaValue                          = "Gamma Value"
+    m_AgentGender                         = "Agent Gender"
+    m_ClientGender                        = "Client Gender"
+
+    m_NumberOfSamplesKey                  = "-n"
+    m_NumberOfTrialsKey                   = "-t"
+    m_NumberOfExperimentsKey              = "-x"
+    m_ClientKnowledgeKey                  = "-c"
+    m_AgentKnowledgeKey                   = "-a"
+    m_MaxHorizonKey                       = "-d"
+    m_UniformDrawsKey                     = "-u"
+    m_RougheningNoiseKey                  = "-r"
+    m_EnvironmentNoiseKey                 = "-e"
+    m_GammaValueKey                       = "-g"
+    m_AgentGenderKey                      = "-k"
+    m_ClientGenderKey                     = "-l"
+    m_VerboseKey                          = "-v"
+
+    m_NumberOfSamplesDefault              = 1000
+    m_NumberOfTrialsDefault               = 20
+    m_NumberOfExperimentsDefault          = 10
+    m_ClientKnowledgeDefault              = m_KnowledgeChoices[0]
+    m_AgentKnowledgeDefault               = m_KnowledgeChoices[0]
+    m_MaxHorizonDefault                   = 50
+    m_UniformDrawsDefault                 = "False"
+    m_RougheningNoiseDefault              = -1.0
+    m_EnvironmentNoiseDefault             = 0.0
+    m_GammaValueDefault                   = 1.0
+    m_AgentGenderDefault                  = m_GenderChoices[eGender.male]
+    m_ClientGenderDefault                 = m_GenderChoices[eGender.male]
+
+
+class cBayesactSimConstants:
+    m_BayesactSimFileName = "bayesactsim.py"

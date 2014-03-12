@@ -10,3 +10,19 @@ class eEPA:
     evaluationSelf, potencySelf, activitySelf,\
     evaluationAction, potencyAction, activityAction,\
     evaluationOther, potencyOther, activityOther = range(9)
+
+class eIdentityParse:
+    identity, maleEvaluation, malePotency, maleActivity,\
+    femaleEvaluation, femalePotency, femaleActivity, institution = range(8)
+
+class eAgentListBoxParam:
+    identity, maleSentiment, femaleSentiment, institution = range(4)
+
+class eInstitutions:
+    gender, institution, undefined = range(3)
+
+class eInteractants:
+    agent, client = range(2)
+
+class eGender:
+    male, female = range(2)

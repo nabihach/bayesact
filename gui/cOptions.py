@@ -14,6 +14,7 @@ class cOptionsPanel(wx.Panel):
         self.m_FocusedFrame = None
 
 
+    # Switches focus for separate plots
     def switchFocus(self, iPlotFrame):
         self.m_FocusedFrameTextBox.SetValue(iPlotFrame.GetLabel())
         self.m_FocusedFrame = iPlotFrame

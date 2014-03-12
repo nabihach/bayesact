@@ -1,29 +1,30 @@
 from cEnum import eAxes
 from cConstants import cPlotConstants, cPlot2DConstants
-import cPlot as cPlt
+import cPlot
 import wx
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 
 
-class cPlotFrame(cPlt.cPlotFrame):
+class cPlotFrame(cPlot.cPlotFrame):
 
     def __init__(self, iParent, **kwargs):
-        cPlt.cPlotFrame.__init__(self, iParent, **kwargs)
+        cPlot.cPlotFrame.__init__(self, iParent, **kwargs)
 
     def initPanel(self, **kwargs):
         self.m_PlotPanel = cPlotPanel(self, **kwargs)
 
 
-class cPlotPanel(cPlt.cPlotPanel):
+class cPlotPanel(cPlot.cPlotPanel):
 
     def __init__(self, iParent, **kwargs):
-        cPlt.cPlotPanel.__init__(self, iParent, **kwargs)
+        cPlot.cPlotPanel.__init__(self, iParent, **kwargs)
 
         self.m_NumAxes = 2
 
-        self.m_Figure = Figure(figsize=cPlot2DConstants.m_FigSize,
+        self.m_Figure = Figure(figsize=self.getFigSize(),
             facecolor=cPlotConstants.m_BackgroundColour, edgecolor=cPlotConstants.m_BackgroundColour)
+
 
         self.m_Axes = self.m_Figure.add_axes(cPlot2DConstants.m_Rect)
         self.m_Axes.set_xlim(self.m_XAxisMin, self.m_XAxisMax)
@@ -38,6 +39,12 @@ class cPlotPanel(cPlt.cPlotPanel):
         self.m_Canvas.mpl_connect("key_press_event", self.onKeyPress)
         self.m_Canvas.mpl_connect("scroll_event", self.onScroll)
 
+
+    def getFigSize(self):
+        x, y = self.GetSize()
+        x = x * cPlot2DConstants.m_FigRatioX
+        y = y * cPlot2DConstants.m_FigRatioY
+        return (x, y)
 
     def plotScatter(self, iXData, iYData, iAutoScaling=False, iRedraw=False, iUpdate=True, **kwargs):
         if (True == iRedraw):
