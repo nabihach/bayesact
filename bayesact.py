@@ -12,6 +12,7 @@ use python2.6
 see README for details
 ----------------------------------------------------------------------------------------------"""
 
+import os
 import math
 import sys
 import re
@@ -29,9 +30,8 @@ from cEnum import eTurn
 #---------------------------------------------------------------------------------------------------------------------------
 ofname="bayesact.spudd"
 #file with the transient equations
-temfname="tdynamics-male.dat"
-teffname="tdynamics-female.dat"
-
+temfname=os.path.join(os.path.dirname(__file__), "tdynamics-male.dat")
+teffname=os.path.join(os.path.dirname(__file__), "tdynamics-female.dat")
 #tests where transients are equal to fundamentals
 #temfname="tdynamics-test.dat"
 #teffname="tdynamics-test.dat"
