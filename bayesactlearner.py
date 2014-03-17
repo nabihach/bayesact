@@ -209,13 +209,18 @@ class LearningAgent(Agent):
         super(LearningAgent, self).__init__(self,*args,**kwargs)
         self.h = kwargs.get("kernel_scale",1.0)
         
+    def initialise_x(self,initx):
+        if NP.random.random() > 0.5:
+            return [State.turnnames.index(initx)]
+        else:
+            return [State.turnnames.index(invert_turn(initx))]
 
     #evaluates a sample of Fvar'=state.f
     #the observ now is a word which will need to be looked up
     
     def evalSampleFvar(self,fvars,tdyn,state,ivar,ldenom,turn,observ):
         weight=0.0
-        if (not observ==[]) and turn=="client":
+        if (not observ==[]): # and turn=="client":
             fb=getbvars(fvars,state.f)
             try:
                 #super inefficient because it checks if each word in the chat is known every time this is called (for every sample)
@@ -232,6 +237,14 @@ class LearningAgent(Agent):
         else:
             weight=0.0
         return weight
+
+    #overload in subclass
+    def sampleXvar(self,f,tau,state,aab,paab=None):
+        if NP.random.random() > 0.2:
+            return [state.invert_turn()]
+        else:
+            return state.x
+
 
     def getFbSamples(self,fvars):
         fb=[]
@@ -441,7 +454,7 @@ while not done:
     #and to figure out the observation 
     learn_turn=learn_avgs.get_turn()
 
-
+    learn_turn = raw_input("whose turn (agent/client)?")
     observ=[]
 
     #if use_pomcp or learn_turn=="agent":
@@ -451,15 +464,24 @@ while not done:
     if learn_turn=="agent":
         print "suggested action for the agent is :",learn_aab,"\n  closest label is: ",aact
 
+    
 
     if learn_turn=="agent":
         #we only want to ask the user for an action if it is his turn, 
         #although this could be relaxed to allow the agent to barge in 
         #this will be relevant if the turn is non-deterministic, in which case there
         #may be some samples for each turn value, and we may want an action to take??
-        learn_aab=ask_client(fbehaviours_agent,aact,learn_aab,learn_turn)
-        print "agent does action :",learn_aab,"\n"
-        learn_observ=[]
+        
+
+        #learn_aab=ask_client(fbehaviours_agent,aact,learn_aab,learn_turn)
+        #print "agent does action :",learn_aab,"\n"
+        #learn_observ=[]
+
+
+        #here, we should set 
+        learn_observ = ask_client_chat(fbehaviours_agent,aact,learn_aab,learn_turn)
+        learn_aab=[]
+
     else:
         #first, see what the agent would predict and suggest this to the client
         #this can be removed in a true interactive setting, so this is only here so we can see what is going on
@@ -477,7 +499,7 @@ while not done:
     #we may be done if the user has killed the interaction
     if learn_turn=="client" and learn_observ==[]:
         done = True
-    elif learn_turn=="agent" and learn_aab==[]:
+    elif learn_turn=="agent" and learn_observ==[]:
         done = True
     else:
         #agent gets to observe the turn each time
