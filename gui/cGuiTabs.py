@@ -1,5 +1,7 @@
 from cOptionsAgent import cOptionsAgentPanel
 from cBayesactSimGui import cBayesactSimGuiPanel
+from cBayesactTools import cBayesactTools
+from cOptionsBayesactSim import cOptionsBayesactSimPanel
 import wx
 import sys
 
@@ -7,17 +9,28 @@ class cGuiTabs(wx.Notebook):
     def __init__(self, parent):
         wx.Notebook.__init__(self, parent, id=wx.ID_ANY, style=wx.BK_TOP)
 
+        # Bayesact Sim
+        self.m_BayesactSim = cBayesactTools()
+
         # Options agent tab
         self.m_OptionsAgentPanel = cOptionsAgentPanel(self)
 
+        # Initial Settings tab for bayesact sim
+        self.m_OptionsBayesactSimPanel = cOptionsBayesactSimPanel(self, self.m_BayesactSim, self.m_OptionsAgentPanel)
+
         # bayesactsim tab
-        self.m_BayesactSimGuiPanel = cBayesactSimGuiPanel(self, self.m_OptionsAgentPanel)
+        self.m_BayesactSimGuiPanel = cBayesactSimGuiPanel(self, self.m_BayesactSim, self.m_OptionsAgentPanel, self.m_OptionsBayesactSimPanel)
 
         self.AddPage(self.m_OptionsAgentPanel, "Define Interactants")
+        self.AddPage(self.m_OptionsBayesactSimPanel, "Bayesact Simulator Settings")
         self.AddPage(self.m_BayesactSimGuiPanel, "Bayesact Simulator")
 
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
         self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGING, self.OnPageChanging)
+        
+        # To get rid of an issue with a little black box appearing on the top left of the window
+        self.SendSizeEvent()
+
 
     def OnPageChanged(self, event):
         old = event.GetOldSelection()

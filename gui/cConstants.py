@@ -78,6 +78,7 @@ class cPlot2DConstants:
 
     # Used for adjusting the position and size of the graph is on the panel
     # Left, Bottom, Width, Height, all of which are fractions of figure width and height or the panel in the range [0,1]
+    # These values were largely chosen for keeping the x and y axis labels visible
     m_Rect = [0.17, 0.12, 0.8, 0.8]
 
 
@@ -93,8 +94,7 @@ class cPlot3DConstants:
 
 
 class cParseConstants:
-    m_Command = "cd ../\npython bayesactsim.py -v"
-    #m_Command = "python bayesactsim.py"
+    m_Command = "python bayesactsim.py -v"
 
     m_IterationPhrase = "-d-d-d-d-d-d-d-d-d-d iter"
     m_SamplesPhrase = "!!!!!! unweighted set:"
@@ -157,6 +157,11 @@ class cInstitutionsConstants:
 
 class cOptionsAgentConstants:
     m_ClientMultipleIdentity = False
+    m_GenderChoices = ["Male", "Female"]
+
+    m_AgentGenderDefault = m_GenderChoices[eGender.male]
+    m_ClientGenderDefault = m_GenderChoices[eGender.male]
+
 
 
 class cOptionSimConstants:
@@ -167,7 +172,6 @@ class cOptionSimConstants:
     #m_KnowledgeChoices = ["0", "1", "2", "3"]
     m_KnowledgeChoices = ["0", "2", "3"]
 
-    m_GenderChoices = ["Male", "Female"]
     m_UniformDrawsChoices = ["True", "False"]
 
     # Agent and client id to be set in options
@@ -184,6 +188,18 @@ class cOptionSimConstants:
     m_GammaValue                          = "Gamma Value"
     m_AgentGender                         = "Agent Gender"
     m_ClientGender                        = "Client Gender"
+
+    m_ClientAlpha                         = "Client Alpha"
+
+    m_ClientBetaOfClient                  = "Client Beta of Client"
+    m_ClientBetaOfAgent                   = "Client Beta of Agent"
+
+    m_AgentAlpha                          = "Agent Alpha"
+
+    m_AgentBetaOfClient                   = "Agent Beta of Client"
+    m_AgentBetaOfAgent                    = "Agent Beta of Agent"
+
+    m_NumSteps                            = "Number of Steps"
 
     m_NumberOfSamplesKey                  = "-n"
     m_NumberOfTrialsKey                   = "-t"
@@ -209,9 +225,35 @@ class cOptionSimConstants:
     m_RougheningNoiseDefault              = -1.0
     m_EnvironmentNoiseDefault             = 0.0
     m_GammaValueDefault                   = 1.0
-    m_AgentGenderDefault                  = m_GenderChoices[eGender.male]
-    m_ClientGenderDefault                 = m_GenderChoices[eGender.male]
+
+    m_ClientAlphaDefault                  = 1.0
+
+    m_ClientBetaOfClientDefault           = 0.005
+    m_ClientBetaOfAgentDefault            = 0.005
+
+    m_AgentAlphaDefault                   = 1.0
+
+    m_AgentBetaOfClientDefault            = 0.005
+    m_AgentBetaOfAgentDefault             = 0.005
+
+    m_NumStepsDefault                     = 1
+
+    m_MinAlpha                            = 0.001
+    m_MinBeta                             = 0.001
+    m_MinGamma                            = 0.001
+    m_MinEnvironmentNoise                 = 0.001
+
+    m_MaxAlpha                            = 2.0
+    m_MaxBeta                             = 2.0
+    m_MaxGamma                            = 2.0
+    m_MaxEnvironmentNoise                 = 2.0
+
 
 
 class cBayesactSimConstants:
     m_BayesactSimFileName = "bayesactsim.py"
+
+class cSliderConstants:
+    # Logarithmic, since I don't know how to use decimal points in sliders,
+    # I will just set the max value to be n times larger than usual, then divide it
+    m_Precision = 1000.0

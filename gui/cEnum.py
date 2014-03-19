@@ -26,3 +26,6 @@ class eInteractants:
 
 class eGender:
     male, female = range(2)
+
+class eGenderKey:
+    anyGender, male, female = range(3)

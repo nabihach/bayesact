@@ -279,10 +279,12 @@ class cBayesactSim(object):
                     learn_agent.sendSamplesToPlotter(learn_agent.samples,self.plotter,eTurn.learner)
                     simul_agent.sendSamplesToPlotter(simul_agent.samples,self.plotter,eTurn.simulator)
                     self.plotter.plot()
-                    # For some reason, while a thread is waiting, the program will say it is leaking memory sometimes
-                    self.waiting = True
-                    self.threadEvent.wait()
-                    self.waiting = False
+                    
+                    if (None != self.threadEvent):
+                        # For some reason, while a thread is waiting, the program will say it is leaking memory sometimes
+                        self.waiting = True
+                        self.threadEvent.wait()
+                        self.waiting = False
 
 
                 if (self.terminateFlag):
@@ -382,9 +384,12 @@ class cBayesactSim(object):
                     #To plot data
                     if (None != self.plotter):
                         self.plotter.plot()
-                        self.waiting = True
-                        self.threadEvent.wait()
-                        self.waiting = False
+
+                        if (None != self.threadEvent):
+                            self.waiting = True
+                            self.threadEvent.wait()
+                            self.waiting = False
+
 
                     if (self.terminateFlag):
                         self.plotter.clearPlots()
