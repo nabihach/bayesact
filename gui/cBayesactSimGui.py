@@ -1,134 +1,219 @@
 import sys
 sys.path.append("../")
-from cConstants import cOptionSimConstants, cBayesactSimConstants
+from cConstants import cOptionSimConstants, cBayesactSimConstants, cSliderConstants
 from cEnum import eEPA
-import string
-import unicodedata
 import threading
 from bayesactsim import cBayesactSim
 import wx
 import cPlotEPA2D
 from cPlotBayesactThread import cPlotBayesactThread
-
+from cNumericValidatorTextBox import cNumericValidatorTextBox
 
 
 class cBayesactSimGuiPanel(wx.Panel):
     # The parent here is the cGuiTabs, which holds the gui itself and the options too
-    def __init__(self, parent, iOptionsAgentPanel, **kwargs):
+    def __init__(self, parent, iBayesactSim, iOptionsAgentPanel, iOptionsBayesactSimPanel, **kwargs):
         wx.Panel.__init__(self, parent, **kwargs)
 
-        self.m_InteractantsPanel = iOptionsAgentPanel
+        self.m_OptionsAgentPanel = iOptionsAgentPanel
+        self.m_OptionsBayesactSimPanel = iOptionsBayesactSimPanel
+        self.m_BayesactSim = iBayesactSim
+        self.m_BayesactSim.gui_manager = self
 
-        self.argv = [cBayesactSimConstants.m_BayesactSimFileName]
-        self.m_BayesactSim = None
         self.m_BayesactSimThread = None
 
 
         # These are for all the options you can fill into the simulation
         ########################################################################################
-
-        wx.StaticText(self, -1, cOptionSimConstants.m_NumberOfSamples, pos=(10, 10))
-        self.m_NumberOfSamplesTextBox = wx.TextCtrl(self, -1, pos=(170, 8), size=(106, 20),
-                                               value=str(cOptionSimConstants.m_NumberOfSamplesDefault),
-                                               validator=cNumericValidator(iDecimals=False, iNegative=False))
-
-
-        wx.StaticText(self, -1, cOptionSimConstants.m_NumberOfTrials, pos=(10, 40))
-        self.m_NumberOfTrialsTextBox = wx.TextCtrl(self, -1, pos=(170, 38), size=(106, 20),
-                                                   value=str(cOptionSimConstants.m_NumberOfTrialsDefault),
-                                                   validator=cNumericValidator(iDecimals=False, iNegative=False))
+        #self.m_SliderSize = (180, 24)
+        #self.m_TextBoxSize = (110, 28)
+        #self.m_ComboBoxSize = (110, 28)
+        #self.m_ButtonSize = (190, 28)
+        self.m_SliderSize = wx.DefaultSize
+        self.m_TextBoxSize = wx.DefaultSize
+        self.m_ComboBoxSize = wx.DefaultSize
+        self.m_ButtonSize = wx.DefaultSize
 
 
-        wx.StaticText(self, -1, cOptionSimConstants.m_NumberOfExperiments, pos=(10, 70))
-        self.m_NumberOfExperimentsTextBox = wx.TextCtrl(self, -1, pos=(170, 68), size=(106, 20),
-                                                        value=str(cOptionSimConstants.m_NumberOfExperimentsDefault),
-                                                        validator=cNumericValidator(iDecimals=False, iNegative=False))
+        # The Client and Agent alpha and beta values
+        # Box sizes for windows and mac are: (110 by 28) and (106 by 20) pixels respectively
+        wx.StaticText(self, -1, cOptionSimConstants.m_ClientAlpha, pos=(10,30))
+        self.m_ClientAlphaTextBox = wx.TextCtrl(self, -1, pos=(170, 28), size=self.m_TextBoxSize,
+                                                value=str(cOptionSimConstants.m_ClientAlphaDefault),
+                                                validator=cNumericValidatorTextBox(iDecimals=True, iNegative=False))
+        self.m_ClientAlphaTextBox.Bind(wx.EVT_TEXT, self.onSetClientAlphaFlag)
+        # Default size on windows is (100, 24)
+        self.m_ClientAlphaSlider = wx.Slider(self, -1, value=cOptionSimConstants.m_ClientAlphaDefault*cSliderConstants.m_Precision,
+                                             pos=(290, 28), size=self.m_SliderSize,
+                                             minValue=cOptionSimConstants.m_MinAlpha*cSliderConstants.m_Precision,
+                                             maxValue=cOptionSimConstants.m_MaxAlpha*cSliderConstants.m_Precision,
+                                             style=wx.SL_HORIZONTAL)
+        self.m_ClientAlphaSlider.Bind(wx.EVT_SCROLL, lambda event, textBox=self.m_ClientAlphaTextBox: self.onChangeValueViaSlider(event, textBox))
 
 
-        wx.StaticText(self, -1, cOptionSimConstants.m_ClientKnowledge, pos=(10, 100))
-        self.m_ClientKnowledgeChoice = wx.Choice(self, -1, pos=(170, 98), size=(106, 20),
-                                                 choices=cOptionSimConstants.m_KnowledgeChoices,
-                                                 style=wx.CHOICEDLG_STYLE)
-        self.m_ClientKnowledgeChoice.SetStringSelection(cOptionSimConstants.m_ClientKnowledgeDefault)
+
+        wx.StaticText(self, -1, cOptionSimConstants.m_ClientBetaOfClient, pos=(10, 60))
+        self.m_ClientBetaOfClientTextBox = wx.TextCtrl(self, -1, pos=(170, 58), size=self.m_TextBoxSize,
+                                                       value=str(cOptionSimConstants.m_ClientBetaOfClientDefault),
+                                                       validator=cNumericValidatorTextBox(iDecimals=True, iNegative=False))
+        self.m_ClientBetaOfClientTextBox.Bind(wx.EVT_TEXT, self.onSetClientBetaOfClientFlag)
+
+        self.m_ClientBetaOfClientSlider = wx.Slider(self, -1, value=cOptionSimConstants.m_ClientBetaOfClientDefault*cSliderConstants.m_Precision,
+                                                    pos=(290, 58), size=self.m_SliderSize,
+                                                    minValue=cOptionSimConstants.m_MinBeta*cSliderConstants.m_Precision,
+                                                    maxValue=cOptionSimConstants.m_MaxBeta*cSliderConstants.m_Precision,
+                                                    style=wx.SL_HORIZONTAL)
+        self.m_ClientBetaOfClientSlider.Bind(wx.EVT_SCROLL, lambda event, textBox=self.m_ClientBetaOfClientTextBox: self.onChangeValueViaSlider(event, textBox))
 
 
-        wx.StaticText(self, -1, cOptionSimConstants.m_AgentKnowledge, pos=(10, 130))
-        self.m_AgentKnowledgeChoice = wx.Choice(self, -1, pos=(170, 128), size=(106, 20),
-                                                choices=cOptionSimConstants.m_KnowledgeChoices,
+
+        wx.StaticText(self, -1, cOptionSimConstants.m_ClientBetaOfAgent, pos=(10, 90))
+        self.m_ClientBetaOfAgentTextBox = wx.TextCtrl(self, -1, pos=(170, 88), size=self.m_TextBoxSize,
+                                                      value=str(cOptionSimConstants.m_ClientBetaOfAgentDefault),
+                                                      validator=cNumericValidatorTextBox(iDecimals=True, iNegative=False))
+        self.m_ClientBetaOfAgentTextBox.Bind(wx.EVT_TEXT, self.onSetClientBetaOfAgentFlag)
+
+        self.m_ClientBetaOfAgentSlider = wx.Slider(self, -1, value=cOptionSimConstants.m_ClientBetaOfAgentDefault*cSliderConstants.m_Precision,
+                                                   pos=(290, 88), size=self.m_SliderSize,
+                                                   minValue=cOptionSimConstants.m_MinBeta*cSliderConstants.m_Precision,
+                                                   maxValue=cOptionSimConstants.m_MaxBeta*cSliderConstants.m_Precision,
+                                                   style=wx.SL_HORIZONTAL)
+        self.m_ClientBetaOfAgentSlider.Bind(wx.EVT_SCROLL, lambda event, textBox=self.m_ClientBetaOfAgentTextBox: self.onChangeValueViaSlider(event, textBox))
+
+
+
+
+
+        wx.StaticText(self, -1, cOptionSimConstants.m_AgentAlpha, pos=(10, 120))
+        self.m_AgentAlphaTextBox = wx.TextCtrl(self, -1, pos=(170, 118), size=self.m_TextBoxSize,
+                                               value=str(cOptionSimConstants.m_AgentAlphaDefault),
+                                               validator=cNumericValidatorTextBox(iDecimals=True, iNegative=False))
+        self.m_AgentAlphaTextBox.Bind(wx.EVT_TEXT, self.onSetAgentAlphaFlag)
+
+        self.m_AgentAlphaSlider = wx.Slider(self, -1, value=cOptionSimConstants.m_AgentAlphaDefault*cSliderConstants.m_Precision,
+                                            pos=(290, 118), size=self.m_SliderSize,
+                                            minValue=cOptionSimConstants.m_MinAlpha*cSliderConstants.m_Precision,
+                                            maxValue=cOptionSimConstants.m_MaxAlpha*cSliderConstants.m_Precision,
+                                            style=wx.SL_HORIZONTAL)
+        self.m_AgentAlphaSlider.Bind(wx.EVT_SCROLL, lambda event, textBox=self.m_AgentAlphaTextBox: self.onChangeValueViaSlider(event, textBox))
+
+
+
+
+
+
+
+        wx.StaticText(self, -1, cOptionSimConstants.m_AgentBetaOfClient, pos=(10, 150))
+        self.m_AgentBetaOfClientTextBox = wx.TextCtrl(self, -1, pos=(170, 148), size=self.m_TextBoxSize,
+                                                      value=str(cOptionSimConstants.m_AgentBetaOfClientDefault),
+                                                      validator=cNumericValidatorTextBox(iDecimals=True, iNegative=False))
+        self.m_AgentBetaOfClientTextBox.Bind(wx.EVT_TEXT, self.onSetAgentBetaOfClientFlag)
+
+        self.m_AgentBetaOfClientSlider = wx.Slider(self, -1, value=cOptionSimConstants.m_AgentBetaOfClientDefault*cSliderConstants.m_Precision,
+                                                   pos=(290, 148), size=self.m_SliderSize,
+                                                   minValue=cOptionSimConstants.m_MinBeta*cSliderConstants.m_Precision,
+                                                   maxValue=cOptionSimConstants.m_MaxBeta*cSliderConstants.m_Precision,
+                                                   style=wx.SL_HORIZONTAL)
+        self.m_AgentBetaOfClientSlider.Bind(wx.EVT_SCROLL, lambda event, textBox=self.m_AgentBetaOfClientTextBox: self.onChangeValueViaSlider(event, textBox))
+
+
+
+        wx.StaticText(self, -1, cOptionSimConstants.m_AgentBetaOfAgent, pos=(10, 180))
+        self.m_AgentBetaOfAgentTextBox = wx.TextCtrl(self, -1, pos=(170, 178), size=self.m_TextBoxSize,
+                                                     value=str(cOptionSimConstants.m_AgentBetaOfAgentDefault),
+                                                     validator=cNumericValidatorTextBox(iDecimals=True, iNegative=False))
+        self.m_AgentBetaOfAgentTextBox.Bind(wx.EVT_TEXT, self.onSetAgentBetaOfAgentFlag)
+
+        self.m_AgentBetaOfAgentSlider = wx.Slider(self, -1, value=cOptionSimConstants.m_AgentBetaOfAgentDefault*cSliderConstants.m_Precision,
+                                                  pos=(290, 178), size=self.m_SliderSize,
+                                                  minValue=cOptionSimConstants.m_MinBeta*cSliderConstants.m_Precision,
+                                                  maxValue=cOptionSimConstants.m_MaxBeta*cSliderConstants.m_Precision,
+                                                 style=wx.SL_HORIZONTAL)
+        self.m_AgentBetaOfAgentSlider.Bind(wx.EVT_SCROLL, lambda event, textBox=self.m_AgentBetaOfAgentTextBox: self.onChangeValueViaSlider(event, textBox))
+
+
+
+
+
+
+        wx.StaticText(self, -1, cOptionSimConstants.m_GammaValue, pos=(10, 210))
+        self.m_GammaValueTextBox = wx.TextCtrl(self, -1, pos=(170, 208), size=self.m_TextBoxSize,
+                                               value=str(cOptionSimConstants.m_GammaValueDefault),
+                                               validator=cNumericValidatorTextBox(iDecimals=True, iNegative=True))
+        self.m_GammaValueTextBox.Bind(wx.EVT_TEXT, self.onSetGammaValueFlag)
+
+        self.m_GammaValueSlider = wx.Slider(self, -1, value=cOptionSimConstants.m_GammaValueDefault*cSliderConstants.m_Precision,
+                                            pos=(290, 208), size=self.m_SliderSize,
+                                            minValue=cOptionSimConstants.m_MinGamma*cSliderConstants.m_Precision,
+                                            maxValue=cOptionSimConstants.m_MaxGamma*cSliderConstants.m_Precision,
+                                            style=wx.SL_HORIZONTAL)
+        self.m_GammaValueSlider.Bind(wx.EVT_SCROLL, lambda event, textBox=self.m_GammaValueTextBox: self.onChangeValueViaSlider(event, textBox))
+
+
+
+
+
+        wx.StaticText(self, -1, cOptionSimConstants.m_EnvironmentNoise, pos=(10, 240))
+        self.m_EnvironmentNoiseTextBox = wx.TextCtrl(self, -1, pos=(170, 238), size=self.m_TextBoxSize,
+                                                     value=str(cOptionSimConstants.m_EnvironmentNoiseDefault),
+                                                     validator=cNumericValidatorTextBox(iDecimals=True, iNegative=True))
+        self.m_EnvironmentNoiseTextBox.Bind(wx.EVT_TEXT, self.onSetEnvironmentNoiseFlag)
+
+        self.m_EnvironmentNoiseSlider = wx.Slider(self, -1, value=cOptionSimConstants.m_EnvironmentNoiseDefault*cSliderConstants.m_Precision,
+                                                  pos=(290, 238), size=self.m_SliderSize,
+                                                  minValue=cOptionSimConstants.m_MinEnvironmentNoise*cSliderConstants.m_Precision,
+                                                  maxValue=cOptionSimConstants.m_MaxEnvironmentNoise*cSliderConstants.m_Precision,
+                                                  style=wx.SL_HORIZONTAL)
+        self.m_EnvironmentNoiseSlider.Bind(wx.EVT_SCROLL, lambda event, textBox=self.m_EnvironmentNoiseTextBox: self.onChangeValueViaSlider(event, textBox))
+
+
+        wx.StaticText(self, -1, cOptionSimConstants.m_UniformDraws, pos=(10, 270))
+        self.m_UniformDrawsChoice = wx.ComboBox(self, -1, pos=(170, 268), size=self.m_ComboBoxSize,
+                                                choices=cOptionSimConstants.m_UniformDrawsChoices,
                                                 style=wx.CHOICEDLG_STYLE)
-        self.m_AgentKnowledgeChoice.SetStringSelection(cOptionSimConstants.m_AgentKnowledgeDefault)
-
-
-        wx.StaticText(self, -1, cOptionSimConstants.m_MaxHorizon, pos=(10, 160))
-        self.m_MaxHorizonTextBox = wx.TextCtrl(self, -1, pos=(170, 158), size=(106, 20),
-                                               value=str(cOptionSimConstants.m_MaxHorizonDefault),
-                                               validator=cNumericValidator(iDecimals=False, iNegative=False))
-
-
-        wx.StaticText(self, -1, cOptionSimConstants.m_UniformDraws, pos=(10, 190))
-        self.m_UniformDrawsChoice = wx.Choice(self, -1, pos=(170, 188), size=(106, 20),
-                                              choices=cOptionSimConstants.m_UniformDrawsChoices,
-                                              style=wx.CHOICEDLG_STYLE)
         self.m_UniformDrawsChoice.SetStringSelection(cOptionSimConstants.m_UniformDrawsDefault)
+        self.m_UniformDrawsChoice.Bind(wx.EVT_COMBOBOX, self.onSetUniformDrawsFlag)
 
 
-        wx.StaticText(self, -1, cOptionSimConstants.m_RougheningNoise, pos=(10, 220))
-        self.m_RougheningNoiseTextBox = wx.TextCtrl(self, -1, pos=(170, 218), size=(106, 20),
-                                                    value=str(cOptionSimConstants.m_RougheningNoiseDefault),
-                                                    validator=cNumericValidator(iDecimals=True, iNegative=True))
-
-
-        wx.StaticText(self, -1, cOptionSimConstants.m_EnvironmentNoise, pos=(10, 250))
-        self.m_EnvironmentNoiseTextBox = wx.TextCtrl(self, -1, pos=(170, 248), size=(106, 20),
-                                                     value=str(cOptionSimConstants.m_RougheningNoiseDefault),
-                                                     validator=cNumericValidator(iDecimals=True, iNegative=True))
-
-
-        wx.StaticText(self, -1, cOptionSimConstants.m_GammaValue, pos=(10, 280))
-        self.m_GammaValueTextBox = wx.TextCtrl(self, -1, pos=(170, 278), size=(106, 20),
-                                               value=str(cOptionSimConstants.m_RougheningNoiseDefault),
-                                               validator=cNumericValidator(iDecimals=True, iNegative=True))
-
-
-        wx.StaticText(self, -1, cOptionSimConstants.m_ClientGender, pos=(10, 310))
-        self.m_ClientGenderChoice = wx.Choice(self, -1, pos=(170, 308), size=(106, 20),
-                                              choices=cOptionSimConstants.m_GenderChoices,
-                                              style=wx.CHOICEDLG_STYLE)
-        self.m_ClientGenderChoice.SetStringSelection(cOptionSimConstants.m_ClientGenderDefault)
-
-
-        wx.StaticText(self, -1, cOptionSimConstants.m_AgentGender, pos=(10, 340))
-        self.m_AgentGenderChoice = wx.Choice(self, -1, pos=(170, 338), size=(106, 20),
-                                             choices=cOptionSimConstants.m_GenderChoices,
-                                             style=wx.CHOICEDLG_STYLE)
-        self.m_AgentGenderChoice.SetStringSelection(cOptionSimConstants.m_AgentGenderDefault)
+        wx.StaticText(self, -1, cOptionSimConstants.m_NumSteps, pos=(10, 300))
+        self.m_NumberOfStepsTextBox = wx.TextCtrl(self, -1, pos=(170, 298), size=self.m_TextBoxSize,
+                                                  value=str(cOptionSimConstants.m_NumStepsDefault),
+                                                  validator=cNumericValidatorTextBox(iDecimals=False, iNegative=False))
+        self.m_NumberOfStepsTextBox.Bind(wx.EVT_TEXT, self.onSetNumStepsFlag)
 
 
         ########################################################################################
 
 
-        self.m_StartButton = wx.Button(self, -1, label="Start", pos=(10, 370), size=(190, 20))
+        self.m_StartButton = wx.Button(self, -1, label="Start", pos=(10, 370), size=self.m_ButtonSize)
         self.m_StartButton.Bind(wx.EVT_BUTTON, self.onStartBayesactSim)
 
         self.m_PlotEPAPanel2D_A = cPlotEPA2D.cPlotPanel(self,
                                                         iXAxisItem=eEPA.evaluation,
                                                         iYAxisItem=eEPA.potency,
-                                                        pos=(400, 0), size=(500, 300))
+                                                        pos=(470, 0), size=(500, 300))
 
         self.m_PlotEPAPanel2D_B = cPlotEPA2D.cPlotPanel(self,
                                                         iXAxisItem=eEPA.activity,
                                                         iYAxisItem=eEPA.potency,
-                                                        pos=(400, 350), size=(500, 300))
+                                                        pos=(470, 350), size=(500, 300))
 
 
-        self.m_PauseButton = wx.Button(self, -1, label="Pause", pos=(10, 400), size=(190, 20))
-        self.m_PauseButton.Bind(wx.EVT_BUTTON, self.onPauseBayesactSim)
 
-        self.m_ResumeButton = wx.Button(self, -1, label="Resume", pos=(10, 430), size=(190, 20))
-        self.m_ResumeButton.Bind(wx.EVT_BUTTON, self.onResumeBayesactSim)
+        self.m_StepButton = wx.Button(self, -1, label="Step", pos=(10, 400), size=self.m_ButtonSize)
+        self.m_StepButton.Bind(wx.EVT_BUTTON, self.onStepBayesactSim)
 
-        self.m_StopButton = wx.Button(self, -1, label="Stop", pos=(10, 460), size=(190, 20))
-        self.m_StopButton.Bind(wx.EVT_BUTTON, self.onCloseThread)
+        self.m_StopButton = wx.Button(self, -1, label="Stop", pos=(10, 430), size=self.m_ButtonSize)
+        self.m_StopButton.Bind(wx.EVT_BUTTON, self.onStopBayesactSim)
+
+        #self.m_PauseButton = wx.Button(self, -1, label="Pause", pos=(10, 400), size=(190, 28))
+        #self.m_PauseButton.Bind(wx.EVT_BUTTON, self.onPauseBayesactSim)
+
+        #self.m_ResumeButton = wx.Button(self, -1, label="Resume", pos=(10, 430), size=(190, 28))
+        #self.m_ResumeButton.Bind(wx.EVT_BUTTON, self.onResumeBayesactSim)
+
+        #self.m_StopButton = wx.Button(self, -1, label="Stop", pos=(10, 460), size=(190, 28))
+        #self.m_StopButton.Bind(wx.EVT_BUTTON, self.onStopBayesactSim)
 
 
         wx.StaticText(self, -1, "Green:", pos=(10, 500))
@@ -143,7 +228,7 @@ class cBayesactSimGuiPanel(wx.Panel):
         wx.StaticText(self, -1, "Blue:", pos=(10, 560))
         wx.StaticText(self, -1, "What agent thinks of client", pos=(70, 560))
 
-        self.m_BayesactSim = cBayesactSim(self.argv)
+
         self.updateSettingsFromBayesact()
 
 
@@ -153,90 +238,85 @@ class cBayesactSimGuiPanel(wx.Panel):
         print iEvent.GetEventObject().GetValue()
 
 
+
     # To set the values of the gui to the values in bayesact
     def updateSettingsFromBayesact(self):
-        self.m_NumberOfSamplesTextBox.SetValue(str(self.m_BayesactSim.num_samples))
-        self.m_NumberOfTrialsTextBox.SetValue(str(self.m_BayesactSim.num_trials))
-        self.m_NumberOfExperimentsTextBox.SetValue(str(self.m_BayesactSim.num_experiments))
-
-        self.m_ClientKnowledgeChoice.SetStringSelection(str(self.m_BayesactSim.client_knowledge))
-        self.m_AgentKnowledgeChoice.SetStringSelection(str(self.m_BayesactSim.agent_knowledge))
-
-        self.m_MaxHorizonTextBox.SetValue(str(self.m_BayesactSim.max_horizon))
-        self.m_UniformDrawsChoice.SetStringSelection(str(self.m_BayesactSim.uniform_draws))
-
-        self.m_RougheningNoiseTextBox.SetValue(str(self.m_BayesactSim.roughening_noise))
-        self.m_EnvironmentNoiseTextBox.SetValue(str(self.m_BayesactSim.env_noise))
-        self.m_GammaValueTextBox.SetValue(str(self.m_BayesactSim.gamma_value))
-
-        self.m_ClientGenderChoice.SetStringSelection(self.m_BayesactSim.client_gender)
-        self.m_AgentGenderChoice.SetStringSelection(self.m_BayesactSim.agent_gender)
+        self.m_OptionsBayesactSimPanel.updateSettingsFromBayesact()
 
 
     # To set the values of bayesact to the values in the gui
+    # Should only be used to initialize
     def updateBayesactFromSettings(self):
-        self.m_BayesactSim.num_samples = int(self.m_NumberOfSamplesTextBox.GetValue())
-        self.m_BayesactSim.num_trials = int(self.m_NumberOfTrialsTextBox.GetValue())
-        self.m_BayesactSim.num_experiments = int(self.m_NumberOfExperimentsTextBox.GetValue())
-
-        self.m_BayesactSim.client_knowledge = int(self.m_ClientKnowledgeChoice.GetStringSelection())
-        self.m_BayesactSim.agent_knowledge = int(self.m_AgentKnowledgeChoice.GetStringSelection())
-        self.m_BayesactSim.max_horizon = int(self.m_MaxHorizonTextBox.GetValue())
         self.m_BayesactSim.uniform_draws = bool(self.m_UniformDrawsChoice.GetStringSelection())
-
-        self.m_BayesactSim.roughening_noise = float(self.m_RougheningNoiseTextBox.GetValue())
         self.m_BayesactSim.env_noise = float(self.m_EnvironmentNoiseTextBox.GetValue())
         self.m_BayesactSim.gamma_value = float(self.m_GammaValueTextBox.GetValue())
 
-        self.m_BayesactSim.client_gender = str(self.m_ClientGenderChoice.GetStringSelection())
-        self.m_BayesactSim.agent_gender = str(self.m_AgentGenderChoice.GetStringSelection())
+        self.m_BayesactSim.client_alpha_value = float(self.m_ClientAlphaTextBox.GetValue())
 
-        self.m_BayesactSim.client_id_label = str(self.m_InteractantsPanel.m_ClientIdentityTextBox.GetValue())
-        self.m_BayesactSim.agent_id_label = str(self.m_InteractantsPanel.m_AgentIdentityTextBox.GetValue())
+        self.m_BayesactSim.client_beta_value_of_client = float(self.m_ClientBetaOfClientTextBox.GetValue())
+        self.m_BayesactSim.client_beta_value_of_agent = float(self.m_ClientBetaOfAgentTextBox.GetValue())
+
+        self.m_BayesactSim.agent_alpha_value = float(self.m_AgentAlphaTextBox.GetValue())
+
+        self.m_BayesactSim.agent_beta_value_of_client = float(self.m_AgentBetaOfClientTextBox.GetValue())
+        self.m_BayesactSim.agent_beta_value_of_agent = float(self.m_AgentBetaOfAgentTextBox.GetValue())
+
+        self.m_OptionsBayesactSimPanel.updateBayesactFromSettings()
 
 
-    # Will disable ability to update number of samples, trials, experiments and max horizon
-    # Uniform draws doesn't seem to do anything
-    # Knowledge cannot be set again since it is also something initialized at the beginning
-    # Cannot update gender after it has been set due to initialization of tdynamic files
     def disableStartingOptions(self):
-        self.m_NumberOfSamplesTextBox.Enable(False)
-        self.m_NumberOfTrialsTextBox.Enable(False)
-        self.m_NumberOfExperimentsTextBox.Enable(False)
-
-        self.m_ClientKnowledgeChoice.Enable(False)
-        self.m_AgentKnowledgeChoice.Enable(False)
-
-        self.m_MaxHorizonTextBox.Enable(False)
-        self.m_UniformDrawsChoice.Enable(False)
-
-        self.m_ClientGenderChoice.Enable(False)
-        self.m_AgentGenderChoice.Enable(False)
+        self.m_OptionsBayesactSimPanel.disableStartingOptions()
 
 
     def enableStartingOptions(self):
-        self.m_NumberOfSamplesTextBox.Enable(True)
-        self.m_NumberOfTrialsTextBox.Enable(True)
-        self.m_NumberOfExperimentsTextBox.Enable(True)
+        self.m_OptionsBayesactSimPanel.enableStartingOptions()
 
-        self.m_ClientKnowledgeChoice.Enable(True)
-        self.m_AgentKnowledgeChoice.Enable(True)
+    # TODO: Have to allow these numbers to be initialized
+    def onSetClientAlphaFlag(self, iEvent):
+        self.m_BayesactSim.update_client_alpha = True
 
-        self.m_MaxHorizonTextBox.Enable(True)
-        self.m_UniformDrawsChoice.Enable(True)
+    def onSetClientBetaOfClientFlag(self, iEvent):
+        self.m_BayesactSim.update_client_beta_of_client = True
 
-        self.m_RougheningNoiseTextBox.Enable(True)
-        self.m_EnvironmentNoiseTextBox.Enable(True)
-        self.m_GammaValueTextBox.Enable(True)
+    def onSetClientBetaOfAgentFlag(self, iEvent):
+        self.m_BayesactSim.update_client_beta_of_agent = True
 
-        self.m_ClientGenderChoice.Enable(True)
-        self.m_AgentGenderChoice.Enable(True)
+    def onSetAgentAlphaFlag(self, iEvent):
+        self.m_BayesactSim.update_agent_alpha = True
+
+    def onSetAgentBetaOfClientFlag(self, iEvent):
+        self.m_BayesactSim.update_agent_beta_of_client = True
+
+    def onSetAgentBetaOfAgentFlag(self, iEvent):
+        self.m_BayesactSim.update_agent_beta_of_agent = True
+
+    def onSetGammaValueFlag(self, iEvent):
+        self.m_BayesactSim.update_gamma_value = True
+
+    def onSetEnvironmentNoiseFlag(self, iEvent):
+        self.m_BayesactSim.update_environment_noise = True
+
+    def onSetUniformDrawsFlag(self, iEvent):
+        self.m_BayesactSim.update_uniform_draws = True
+
+    def onSetNumStepsFlag(self, iEvent):
+        self.m_BayesactSim.update_num_steps = True
 
 
-    def onCloseThread(self, iEvent=None):
+    def onChangeValueViaSlider(self, iEvent, iTextBox):
+        iTextBox.SetValue(str(iEvent.GetEventObject().GetValue() / cSliderConstants.m_Precision))
+
+
+    def onStepBayesactSim(self, iEvent):
         if (None != self.m_BayesactSimThread):
-            self.m_BayesactSim.threadEvent.set()
-            self.m_BayesactSim.terminateFlag = True
+            self.m_BayesactSim.step_bayesact_sim = True
+            self.m_BayesactSim.thread_event.set()
+
+    # Stops bayesact sim and kills thread
+    def onStopBayesactSim(self, iEvent=None):
+        if (None != self.m_BayesactSimThread):
+            self.m_BayesactSim.terminate_flag = True
+            self.m_BayesactSim.thread_event.set()
             self.m_BayesactSimThread.join()
             self.m_BayesactSimThread = None
             self.enableStartingOptions()
@@ -244,9 +324,15 @@ class cBayesactSimGuiPanel(wx.Panel):
 
     def onStartBayesactSim(self, iEvent):
         self.m_StartButton.SetLabel("Restart")
-        self.onCloseThread()
+        self.onStopBayesactSim()
 
         self.disableStartingOptions()
+
+        self.updateBayesactFromSettings()
+        self.m_BayesactSim.client_gender = str(self.m_OptionsAgentPanel.m_ClientGenderChoice.GetStringSelection())
+        self.m_BayesactSim.agent_gender = str(self.m_OptionsAgentPanel.m_AgentGenderChoice.GetStringSelection())
+        self.m_BayesactSim.client_id_label = str(self.m_OptionsAgentPanel.m_ClientIdentityTextBox.GetValue())
+        self.m_BayesactSim.agent_id_label = str(self.m_OptionsAgentPanel.m_AgentIdentityTextBox.GetValue())
 
         plotter = cPlotBayesactThread()
 
@@ -254,12 +340,11 @@ class cBayesactSimGuiPanel(wx.Panel):
         plotter.addPanel(self.m_PlotEPAPanel2D_B)
 
         self.m_BayesactSim.plotter=plotter
-        self.m_BayesactSim.terminateFlag = False
+        self.m_BayesactSim.terminate_flag = False
 
         self.m_BayesactSimThread = threading.Thread(target=self.m_BayesactSim.startBayesactSim)
 
-        self.m_BayesactSim.threadEvent = threading.Event()
-        self.onResumeBayesactSim()
+        self.m_BayesactSim.thread_event = threading.Event()
 
         plotter.setThread(self.m_BayesactSimThread)
         plotter.startThread()
@@ -267,89 +352,19 @@ class cBayesactSimGuiPanel(wx.Panel):
 
 
     def onPauseBayesactSim(self, iEvent=None):
-        self.m_RougheningNoiseTextBox.Enable(True)
-        self.m_EnvironmentNoiseTextBox.Enable(True)
-        self.m_GammaValueTextBox.Enable(True)
-
-        # Queues up a pause event for the thread, the program will pause when it hits its threadEvent.wait()
-        self.m_BayesactSim.threadEvent.clear()
-        # You can also update alpha and beta values here
+        if (None != self.m_BayesactSimThread):
+            # Queues up a pause event for the thread, the program will pause when it hits its thread_event.wait()
+            self.m_BayesactSim.thread_event.clear()
+            # You can also update alpha and beta values here
 
 
     def onResumeBayesactSim(self, iEvent=None):
-        self.m_RougheningNoiseTextBox.Enable(False)
-        self.m_EnvironmentNoiseTextBox.Enable(False)
-        self.m_GammaValueTextBox.Enable(False)
-
-        # Wait until the program finishes whatever it is doing, then update values
-        while (not(self.m_BayesactSim.waiting)):
-            pass
-
-        self.updateBayesactFromSettings()
-
-        # Will resume thread if it is waiting
-        self.m_BayesactSim.threadEvent.set()
+        if (None != self.m_BayesactSimThread):
+            self.updateBayesactFromSettings()
+            # Will resume thread if it is waiting
+            self.m_BayesactSim.thread_event.set()
 
 
 
 
-class cNumericValidator(wx.PyValidator):
-    def __init__(self, iDecimals=True, iNegative=True):
-        wx.PyValidator.__init__(self)
 
-        self.m_AllowDecimals = iDecimals
-        self.m_AllowNegatives = iNegative
-
-        self.Bind(wx.EVT_CHAR, self.onChar)
-
-    def Clone(self):
-        return cNumericValidator(iDecimals=self.m_AllowDecimals, iNegative=self.m_AllowNegatives)
-
-    def Validate(self, win):
-        textctrl = self.GetWindow()
-        value = textctrl.GetValue()
-
-        if ("" == value):
-            return True
-
-        return self.isNumeric(value)
-
-
-    def onChar(self, iEvent):
-        key = iEvent.GetKeyCode()
-        value = self.GetWindow().GetValue()
-        cursorIndex = self.GetWindow().GetInsertionPoint()
-
-        # Allow spaces and backspaces
-        if key < wx.WXK_SPACE or key == wx.WXK_DELETE or key > 255:
-            iEvent.Skip()
-            return
-
-        # Allow numbers
-        if (chr(key) in string.digits):
-            iEvent.Skip()
-            return
-        # Allow hyphen for negative numbers if cursor is at beginning and no other hyphens exists
-        if (self.m_AllowDecimals and (chr(key) == "-") and (0 == cursorIndex) and (not("-" in value))):
-            iEvent.Skip()
-            return
-        # Allow period for decimals if no other periods events
-        elif (self.m_AllowNegatives and (chr(key) == ".") and (not("." in value))):
-            iEvent.Skip()
-            return
-        return
-
-    def isNumeric(iString):
-        try:
-            float(iString)
-            return True
-        except ValueError:
-            pass
-
-        try:
-            unicodedata.numeric(iString)
-            return True
-        except (TypeError, ValueError):
-            pass
-
-        return False

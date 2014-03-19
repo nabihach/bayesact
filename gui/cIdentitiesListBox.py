@@ -1,10 +1,17 @@
 import wx
 from cConstants import cInstitutionsConstants, cDataFilesConstants
 from cEnum import eIdentityParse, eInstitutions, eAgentListBoxParam
+import unicodedata
+
 
 class cIdentitiesListBox(wx.ListBox):
     def __init__(self, parent, **kwargs):
         self.m_IdentitiesData = []
+
+        self.m_SelectedIdentity = None
+        self.m_SelectedMaleSentiment = None
+        self.m_SelectedFemaleSentiment = None
+        self.m_SelectedInstitutions = None
 
         # To fill up the self.m_IdentitiesData with fidentities data
         self.initIdentitiesData()
@@ -13,6 +20,19 @@ class cIdentitiesListBox(wx.ListBox):
         wx.ListBox.__init__(self, parent, -1,
                             choices=self.getIdentities(),
                             style=wx.LB_SINGLE, **kwargs)
+
+        self.Bind(wx.EVT_LISTBOX, self.onSelectItem)
+
+
+    def onSelectItem(self, iEvent):
+        identity = str(iEvent.GetEventObject().GetStringSelection())
+
+        selectedData = filter(lambda x : identity == x[eAgentListBoxParam.identity], self.m_IdentitiesData)[0]
+
+        self.m_SelectedIdentity = identity
+        self.m_SelectedMaleSentiment = selectedData[eAgentListBoxParam.maleSentiment]
+        self.m_SelectedFemaleSentiment = selectedData[eAgentListBoxParam.femaleSentiment]
+        self.m_SelectedInstitutions = selectedData[eAgentListBoxParam.institution]
 
 
     # Reads and parses fbahaviours and puts it into m_IdentitiesData
@@ -56,3 +76,4 @@ class cIdentitiesListBox(wx.ListBox):
     # Returns a list of the identities from the data set
     def getIdentities(self):
         return map(lambda x : x[eAgentListBoxParam.identity], self.m_IdentitiesData)
+
