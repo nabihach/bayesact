@@ -13,7 +13,7 @@ class cOptionsAgentPanel(wx.Panel):
         wx.Panel.__init__(self, parent, **kwargs)
 
         self.m_TextBoxSize = wx.DefaultSize
-        self.m_ComboBoxSize = wx.DefaultSize
+        self.m_ComboBoxSize = (110, 26)
 
 
         wx.StaticText(self, -1, "Identities", pos=(10, 10))
@@ -33,6 +33,8 @@ class cOptionsAgentPanel(wx.Panel):
                                                style=wx.CHOICEDLG_STYLE, value=cInstitutionsConstants.m_Institution[0])
         self.m_InstitutionChoice.Bind(wx.EVT_COMBOBOX, self.onSelectInstitution)
 
+
+
         # Client Identity and gender
         # To have a choice between being a confuser or not
         if (True == cOptionsAgentConstants.m_ClientMultipleIdentity):
@@ -48,9 +50,9 @@ class cOptionsAgentPanel(wx.Panel):
 
         else:
             wx.StaticText(self, -1, "Client Identity", pos=(420, 10))
-            self.m_ClientIdentityTextBox = wx.TextCtrl(self, pos=(420, 40), size=(190, 28),
+            self.m_ClientIdentityTextBox = wx.TextCtrl(self, pos=(420, 40), size=(190, 26),
                                                       style=wx.TE_READONLY)
-            self.m_SetClientIdentityButton = wx.Button(self, label="Set Identity", pos=(420, 70), size=(190, 28))
+            self.m_SetClientIdentityButton = wx.Button(self, label="Set Identity", pos=(414, 70), size=(190, 28))
 
             self.m_SetClientIdentityButton.Bind(wx.EVT_BUTTON, self.onSetClient)
 
@@ -63,9 +65,9 @@ class cOptionsAgentPanel(wx.Panel):
 
         # Agent Identity and gender
         wx.StaticText(self, -1, "Agent Identity", pos=(420, 420))
-        self.m_AgentIdentityTextBox = wx.TextCtrl(self, pos=(418,443), size=(190, 28),
+        self.m_AgentIdentityTextBox = wx.TextCtrl(self, pos=(420,443), size=(190, 26),
                                                   style=wx.TE_READONLY)
-        self.m_SetAgentIdentityButton = wx.Button(self, label="Set Identity", pos=(420, 480), size=(190, 28))
+        self.m_SetAgentIdentityButton = wx.Button(self, label="Set Identity", pos=(414, 480), size=(190, 28))
         self.m_SetAgentIdentityButton.Bind(wx.EVT_BUTTON, self.onSetAgent)
 
 
